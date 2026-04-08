@@ -642,4 +642,4 @@ def _format_amount(amount: float) -> str:
     """
     sign = "+" if amount >= 0 else "-"
     # Format absolute value with 8 integer digits and 2 decimal places
-    return f"{sign}{abs(amount):012.2f}"
+    return f"{sign}{abs(amount):011.2f}"
