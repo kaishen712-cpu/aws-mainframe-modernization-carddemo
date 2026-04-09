@@ -12,6 +12,7 @@ JCL submission with a validated ReportRequest dataclass.
 
 from __future__ import annotations
 
+import calendar
 from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Optional
@@ -139,11 +140,15 @@ def _compute_monthly_dates() -> tuple[str, str]:
     Compute start/end dates for a monthly report.
 
     Start: first day of current month.
-    End: current date.
+    End: last day of current month.
+
+    Matches COBOL logic which advances to the 1st of the next month
+    and subtracts 1 day via DATE-OF-INTEGER(INTEGER-OF-DATE(...) - 1).
     """
     today = date.today()
+    last_day = calendar.monthrange(today.year, today.month)[1]
     start = f"{today.year:04d}{today.month:02d}01"
-    end = f"{today.year:04d}{today.month:02d}{today.day:02d}"
+    end = f"{today.year:04d}{today.month:02d}{last_day:02d}"
     return (start, end)
 
 
@@ -152,11 +157,14 @@ def _compute_yearly_dates() -> tuple[str, str]:
     Compute start/end dates for a yearly report.
 
     Start: January 1 of current year.
-    End: current date.
+    End: December 31 of current year.
+
+    Matches COBOL which sets WS-END-DATE-MM = '12' and
+    WS-END-DATE-DD = '31'.
     """
     today = date.today()
     start = f"{today.year:04d}0101"
-    end = f"{today.year:04d}{today.month:02d}{today.day:02d}"
+    end = f"{today.year:04d}1231"
     return (start, end)
 
 

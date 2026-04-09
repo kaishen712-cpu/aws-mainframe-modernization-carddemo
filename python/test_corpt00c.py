@@ -5,6 +5,7 @@ These tests verify the same business rules that the original COBOL program
 enforces, organised by functional area.
 """
 
+import calendar
 import unittest
 from datetime import date
 
@@ -161,10 +162,11 @@ class TestMonthlyReport(unittest.TestCase):
         self.assertEqual(result.request.report_type, "Monthly")
         self.assertTrue(result.request.confirmed)
 
-        # Date range should be current month
+        # Date range should be current month (1st to last day)
         today = date.today()
+        last_day = calendar.monthrange(today.year, today.month)[1]
         expected_start = f"{today.year:04d}{today.month:02d}01"
-        expected_end = f"{today.year:04d}{today.month:02d}{today.day:02d}"
+        expected_end = f"{today.year:04d}{today.month:02d}{last_day:02d}"
         self.assertEqual(result.request.start_date, expected_start)
         self.assertEqual(result.request.end_date, expected_end)
 
@@ -198,10 +200,12 @@ class TestYearlyReport(unittest.TestCase):
         self.assertIsNotNone(result.request)
         self.assertEqual(result.request.report_type, "Yearly")
 
-        # Date range should be current year
+        # Date range should be full current year (Jan 1 to Dec 31)
         today = date.today()
         expected_start = f"{today.year:04d}0101"
+        expected_end = f"{today.year:04d}1231"
         self.assertEqual(result.request.start_date, expected_start)
+        self.assertEqual(result.request.end_date, expected_end)
 
     def test_yearly_lowercase(self):
         result = process_report_request(yearly="y", confirm="Y")
