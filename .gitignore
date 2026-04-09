@@ -6,3 +6,7 @@ batch-app/markers/*
 /.idea/
 .DS_Store
 **/.DS_Store
+python/htmlcov/
+python/__pycache__/
+python/**/__pycache__/
+.coverage
