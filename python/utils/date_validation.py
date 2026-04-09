@@ -254,9 +254,11 @@ def is_valid_calendar_date(date_str: str) -> bool:
 def validate_date_of_birth(
     date_str: str, field_name: str = "Date of Birth"
 ) -> DateValidationResult:
-    """Validate a date of birth — must be a valid date and not in the future.
+    """Validate a date of birth — must be a valid date and strictly before today.
 
-    Translated from EDIT-DATE-OF-BIRTH in CSUTLDPY.cpy.
+    Translated from EDIT-DATE-OF-BIRTH in CSUTLDPY.cpy.  The COBOL source
+    compares ``WS-CURRENT-DATE-BINARY > WS-EDIT-DATE-BINARY``, meaning
+    today's date is *not* accepted as a valid date of birth.
 
     Args:
         date_str:   An 8-character date string in CCYYMMDD format.
@@ -276,7 +278,7 @@ def validate_date_of_birth(
     dob = date(year_n, month_n, day_n)
     today = date.today()
 
-    if dob > today:
+    if dob >= today:
         return DateValidationResult(
             is_valid=False,
             error_message=f"{field_name}: cannot be in the future.",

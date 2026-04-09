@@ -266,11 +266,12 @@ class TestValidateDateOfBirth:
         result = validate_date_of_birth("19900515")
         assert result.is_valid is True
 
-    def test_today(self) -> None:
+    def test_today_rejected(self) -> None:
+        """COBOL compares current > dob, so dob == today is invalid."""
         today = date.today()
         date_str = f"{today.year:04d}{today.month:02d}{today.day:02d}"
         result = validate_date_of_birth(date_str)
-        assert result.is_valid is True
+        assert result.is_valid is False
 
     def test_future_date(self) -> None:
         result = validate_date_of_birth("20991231")
