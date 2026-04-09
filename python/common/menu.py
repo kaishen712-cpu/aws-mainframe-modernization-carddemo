@@ -12,7 +12,6 @@ the option number, display name, target program, and required user type.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import List
 
 
 @dataclass
@@ -37,7 +36,7 @@ class MenuOption:
 # Main menu (COMEN02Y.cpy — CARDDEMO-MAIN-MENU-OPTIONS, 11 options)
 # ---------------------------------------------------------------------------
 
-MAIN_MENU_OPTIONS: List[MenuOption] = [
+MAIN_MENU_OPTIONS: list[MenuOption] = [
     MenuOption(1,  "Account View",                "COACTVWC", "U"),
     MenuOption(2,  "Account Update",              "COACTUPC", "U"),
     MenuOption(3,  "Credit Card List",            "COCRDLIC", "U"),
@@ -58,7 +57,7 @@ MAIN_MENU_OPTION_COUNT = len(MAIN_MENU_OPTIONS)
 # Admin menu (COADM02Y.cpy — CARDDEMO-ADMIN-MENU-OPTIONS, 6 options)
 # ---------------------------------------------------------------------------
 
-ADMIN_MENU_OPTIONS: List[MenuOption] = [
+ADMIN_MENU_OPTIONS: list[MenuOption] = [
     MenuOption(1, "User List (Security)",                "COUSR00C"),
     MenuOption(2, "User Add (Security)",                 "COUSR01C"),
     MenuOption(3, "User Update (Security)",              "COUSR02C"),

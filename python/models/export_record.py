@@ -10,7 +10,6 @@ sub-record types selected by EXPORT-REC-TYPE.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import List
 
 
 # ---------------------------------------------------------------------------
@@ -25,13 +24,13 @@ class ExportCustomerData:
     exp_cust_first_name: str = ""               # EXP-CUST-FIRST-NAME PIC X(25)
     exp_cust_middle_name: str = ""              # EXP-CUST-MIDDLE-NAME PIC X(25)
     exp_cust_last_name: str = ""                # EXP-CUST-LAST-NAME  PIC X(25)
-    exp_cust_addr_lines: List[str] = field(     # EXP-CUST-ADDR-LINES OCCURS 3
+    exp_cust_addr_lines: list[str] = field(     # EXP-CUST-ADDR-LINES OCCURS 3
         default_factory=lambda: ["", "", ""]
     )
     exp_cust_addr_state_cd: str = ""            # EXP-CUST-ADDR-STATE-CD PIC X(02)
     exp_cust_addr_country_cd: str = ""          # EXP-CUST-ADDR-COUNTRY-CD PIC X(03)
     exp_cust_addr_zip: str = ""                 # EXP-CUST-ADDR-ZIP   PIC X(10)
-    exp_cust_phone_nums: List[str] = field(     # EXP-CUST-PHONE-NUMS OCCURS 2
+    exp_cust_phone_nums: list[str] = field(     # EXP-CUST-PHONE-NUMS OCCURS 2
         default_factory=lambda: ["", ""]
     )
     exp_cust_ssn: str = ""                      # EXP-CUST-SSN        PIC 9(09)

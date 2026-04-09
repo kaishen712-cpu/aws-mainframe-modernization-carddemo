@@ -53,13 +53,6 @@ class AbendData:
 
 DATE_FORMAT_CCYYMMDD = "YYYYMMDD"
 
-# Display formats
-DATE_DISPLAY_MM_DD_YY = "{month:02d}/{day:02d}/{year:02d}"
-TIME_DISPLAY_HH_MM_SS = "{hours:02d}:{minutes:02d}:{seconds:02d}"
-
-# Timestamp format:  YYYY-MM-DD HH:MM:SS.MMMMMM
-TIMESTAMP_FORMAT = "{year:04d}-{month:02d}-{day:02d} {hours:02d}:{minutes:02d}:{seconds:02d}.{microseconds:06d}"
-
 
 def format_date_mm_dd_yy(year: int, month: int, day: int) -> str:
     """Format a date as MM/DD/YY (WS-CURDATE-MM-DD-YY).
