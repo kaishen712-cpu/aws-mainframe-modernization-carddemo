@@ -76,13 +76,13 @@ Evaluates the report type selected:
 
 1. **Monthly** (MONTHLYI = 'M' or 'm'):
    - Compute start date: first day of current month
-   - Compute end date: current date
+   - Compute end date: last day of current month
    - Report name: 'Monthly'
    - Submit job
 
 2. **Yearly** (YEARLYI = 'Y' or 'y'):
    - Compute start date: January 1 of current year
-   - Compute end date: current date
+   - Compute end date: December 31 of current year
    - Report name: 'Yearly'
    - Submit job
 
@@ -138,11 +138,11 @@ validated parameters.
 - No selection produces: `"Select a report type to print report..."`
 
 ### 3. Monthly Report
-- Date range: first of current month through current date.
+- Date range: first of current month through last day of current month.
 - No date input fields are required.
 
 ### 4. Yearly Report
-- Date range: January 1 of current year through current date.
+- Date range: January 1 of current year through December 31 of current year.
 - No date input fields are required.
 
 ### 5. Custom Report
