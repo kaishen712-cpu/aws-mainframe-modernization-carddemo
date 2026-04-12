@@ -45,14 +45,9 @@ class Command(BaseCommand):
         for error in errors:
             self.stderr.write(f"ERROR: {error}")
 
-        self.stdout.write(
-            f"Validation complete: {len(errors)} errors, "
-            f"{len(warnings)} warnings"
-        )
+        self.stdout.write(f"Validation complete: {len(errors)} errors, {len(warnings)} warnings")
 
-    def _validate_accounts(
-        self, errors: list[str], warnings: list[str]
-    ) -> None:
+    def _validate_accounts(self, errors: list[str], warnings: list[str]) -> None:
         """Validate all account records."""
         for account in Account.objects.all():
             # Check required fields
@@ -60,46 +55,29 @@ class Command(BaseCommand):
                 errors.append(f"Account {account.pk}: empty acct_id")
 
             if not account.acct_active_status.strip():
-                warnings.append(
-                    f"Account {account.acct_id}: empty active status"
-                )
+                warnings.append(f"Account {account.acct_id}: empty active status")
 
             # HUMAN REVIEW: credit limit threshold validation
             # These are hardcoded business rules that should be reviewed
             if account.acct_credit_limit < Decimal("0"):
-                errors.append(
-                    f"Account {account.acct_id}: negative credit limit"
-                )
+                errors.append(f"Account {account.acct_id}: negative credit limit")
 
             # Balance sanity check
             if account.acct_curr_bal > account.acct_credit_limit * 2:
-                warnings.append(
-                    f"Account {account.acct_id}: balance exceeds "
-                    f"2x credit limit"
-                )
+                warnings.append(f"Account {account.acct_id}: balance exceeds 2x credit limit")
 
-    def _validate_xrefs(
-        self, errors: list[str], warnings: list[str]
-    ) -> None:
+    def _validate_xrefs(self, errors: list[str], warnings: list[str]) -> None:
         """Validate cross-reference records point to existing accounts."""
         for xref in CardXref.objects.all():
-            if not Account.objects.filter(
-                acct_id=xref.xref_acct_id
-            ).exists():
+            if not Account.objects.filter(acct_id=xref.xref_acct_id).exists():
                 errors.append(
-                    f"Xref ****{xref.xref_card_num[-4:]}: "
-                    f"account {xref.xref_acct_id} not found"
+                    f"Xref ****{xref.xref_card_num[-4:]}: account {xref.xref_acct_id} not found"
                 )
 
-    def _validate_cards(
-        self, errors: list[str], warnings: list[str]
-    ) -> None:
+    def _validate_cards(self, errors: list[str], warnings: list[str]) -> None:
         """Validate card records reference existing accounts."""
         for card in Card.objects.all():
-            if not Account.objects.filter(
-                acct_id=card.card_acct_id
-            ).exists():
+            if not Account.objects.filter(acct_id=card.card_acct_id).exists():
                 errors.append(
-                    f"Card ****{card.card_num[-4:]}: "
-                    f"account {card.card_acct_id} not found"
+                    f"Card ****{card.card_num[-4:]}: account {card.card_acct_id} not found"
                 )

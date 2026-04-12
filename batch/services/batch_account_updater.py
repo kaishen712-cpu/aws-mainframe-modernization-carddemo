@@ -76,13 +76,13 @@ class BatchAccountUpdater:
             MONETARY_QUANTIZE, rounding=ROUND_HALF_EVEN
         )
         if amount >= Decimal("0"):
-            delta.curr_cyc_credit_delta = (
-                delta.curr_cyc_credit_delta + amount
-            ).quantize(MONETARY_QUANTIZE, rounding=ROUND_HALF_EVEN)
+            delta.curr_cyc_credit_delta = (delta.curr_cyc_credit_delta + amount).quantize(
+                MONETARY_QUANTIZE, rounding=ROUND_HALF_EVEN
+            )
         else:
-            delta.curr_cyc_debit_delta = (
-                delta.curr_cyc_debit_delta + amount
-            ).quantize(MONETARY_QUANTIZE, rounding=ROUND_HALF_EVEN)
+            delta.curr_cyc_debit_delta = (delta.curr_cyc_debit_delta + amount).quantize(
+                MONETARY_QUANTIZE, rounding=ROUND_HALF_EVEN
+            )
 
     # ------------------------------------------------------------------
     # Flush
@@ -112,12 +112,10 @@ class BatchAccountUpdater:
                         account.acct_curr_bal + delta.curr_bal_delta
                     ).quantize(MONETARY_QUANTIZE, rounding=ROUND_HALF_EVEN)
                     account.acct_curr_cyc_credit = (
-                        account.acct_curr_cyc_credit
-                        + delta.curr_cyc_credit_delta
+                        account.acct_curr_cyc_credit + delta.curr_cyc_credit_delta
                     ).quantize(MONETARY_QUANTIZE, rounding=ROUND_HALF_EVEN)
                     account.acct_curr_cyc_debit = (
-                        account.acct_curr_cyc_debit
-                        + delta.curr_cyc_debit_delta
+                        account.acct_curr_cyc_debit + delta.curr_cyc_debit_delta
                     ).quantize(MONETARY_QUANTIZE, rounding=ROUND_HALF_EVEN)
                     account.save()
                     succeeded_ids.append(acct_id)

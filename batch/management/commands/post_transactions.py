@@ -64,16 +64,12 @@ class Command(BaseCommand):
         daily_transactions = DailyTransaction.objects.all().order_by("dalytran_id")
 
         for daily_txn in daily_transactions:
-            fail_reason, fail_desc = self._validate_transaction(
-                daily_txn, cache
-            )
+            fail_reason, fail_desc = self._validate_transaction(daily_txn, cache)
 
             if fail_reason != 0:
                 # Translated from paragraph 2500-WRITE-REJECT-REC
                 rejected_count += 1
-                reject_lines.append(
-                    f"{daily_txn.dalytran_id}|{fail_reason}|{fail_desc}"
-                )
+                reject_lines.append(f"{daily_txn.dalytran_id}|{fail_reason}|{fail_desc}")
                 continue
 
             self._post_transaction(daily_txn, cache, updater)
@@ -122,9 +118,7 @@ class Command(BaseCommand):
         #                     + DALYTRAN-AMT
         # HUMAN REVIEW: hardcoded credit limit threshold comparison
         temp_bal = (
-            account.acct_curr_cyc_credit
-            - account.acct_curr_cyc_debit
-            + daily_txn.dalytran_amt
+            account.acct_curr_cyc_credit - account.acct_curr_cyc_debit + daily_txn.dalytran_amt
         )
         if account.acct_credit_limit < temp_bal:
             # COBOL: MOVE 102 TO WS-VALIDATION-FAIL-REASON
@@ -154,9 +148,7 @@ class Command(BaseCommand):
 
         # Generate processing timestamp
         # Translated from Z-GET-DB2-FORMAT-TIMESTAMP in CBTRN02C.cbl
-        proc_ts = datetime.now(tz=UTC).strftime(
-            "%Y-%m-%d-%H.%M.%S.%f"
-        )[:26]
+        proc_ts = datetime.now(tz=UTC).strftime("%Y-%m-%d-%H.%M.%S.%f")[:26]
 
         # Paragraph 2700-UPDATE-TCATBAL: update transaction category balance
         self._update_tran_cat_bal(
@@ -212,9 +204,7 @@ class Command(BaseCommand):
             tcatbal.tran_cat_bal += amount
             tcatbal.save()
 
-    def _write_reject_file(
-        self, file_path: str, reject_lines: list[str]
-    ) -> None:
+    def _write_reject_file(self, file_path: str, reject_lines: list[str]) -> None:
         """Write rejected transactions to a file.
 
         Translated from paragraph 2500-WRITE-REJECT-REC in CBTRN02C.cbl.
