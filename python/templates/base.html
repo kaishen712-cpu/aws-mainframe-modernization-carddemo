@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CardDemo{% endblock %}</title>
+    <style>
+        body { font-family: 'Courier New', monospace; background: #000080; color: #00ff00; margin: 0; padding: 20px; }
+        .header { text-align: center; margin-bottom: 20px; border-bottom: 1px solid #00ff00; padding-bottom: 10px; }
+        .header h1 { margin: 0; font-size: 1.2em; }
+        .header h2 { margin: 0; font-size: 1em; color: #ffffff; }
+        .header-info { display: flex; justify-content: space-between; font-size: 0.8em; color: #cccccc; }
+        .content { max-width: 900px; margin: 0 auto; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        th, td { text-align: left; padding: 4px 8px; border: 1px solid #00aa00; }
+        th { background: #003300; color: #ffffff; }
+        a { color: #00ccff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .messages { list-style: none; padding: 0; }
+        .messages li { padding: 5px; margin: 5px 0; }
+        .messages .success { background: #003300; border: 1px solid #00ff00; }
+        .messages .error { background: #330000; border: 1px solid #ff0000; color: #ff0000; }
+        form { margin: 10px 0; }
+        input, select { font-family: 'Courier New', monospace; background: #000033; color: #00ff00; border: 1px solid #00aa00; padding: 4px; }
+        button, .btn { font-family: 'Courier New', monospace; background: #003300; color: #00ff00; border: 1px solid #00aa00; padding: 4px 12px; cursor: pointer; }
+        button:hover, .btn:hover { background: #004400; }
+        .pagination { margin: 10px 0; text-align: center; }
+        .pagination a, .pagination span { margin: 0 5px; }
+        .nav { margin: 10px 0; }
+        .nav a { margin-right: 15px; }
+        .field-row { margin: 8px 0; }
+        .field-row label { display: inline-block; width: 200px; color: #ffffff; }
+        .helptext { font-size: 0.8em; color: #888888; }
+        .errorlist { color: #ff0000; list-style: none; padding: 0; }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <div class="header">
+            <h1>AWS Mainframe Modernization</h1>
+            <h2>CardDemo</h2>
+            <div class="header-info">
+                <span>Program: {% block program_name %}---{% endblock %}</span>
+                <span>Tran ID: {% block transaction_id %}---{% endblock %}</span>
+                <span>{% now "m/d/y" %}</span>
+                <span>{% now "H:i:s" %}</span>
+            </div>
+        </div>
+        {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <li class="{{ message.tags }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        <div class="nav">
+            <a href="{% url 'cards:card_list' %}">Cards</a>
+            <a href="{% url 'transactions:transaction_list' %}">Transactions</a>
+            <a href="{% url 'reports:report_dispatch' %}">Reports</a>
+            <a href="{% url 'user_admin:user_list' %}">Users</a>
+        </div>
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}User List — CardDemo{% endblock %}
+{% block program_name %}{{ program_name }}{% endblock %}
+{% block transaction_id %}{{ transaction_id }}{% endblock %}
+
+{% block content %}
+<h3>User Administration</h3>
+
+<form method="get" action="">
+    <div class="field-row">
+        <label for="id_search">Search:</label>
+        {{ filter_form.search }}
+    </div>
+    <button type="submit">Search</button>
+</form>
+
+{% if users %}
+<table>
+    <thead>
+        <tr>
+            <th>User ID</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Type</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for u in users %}
+        <tr>
+            <td>{{ u.username }}</td>
+            <td>{{ u.first_name }}</td>
+            <td>{{ u.last_name }}</td>
+            <td>{% if u.is_staff %}Admin{% else %}User{% endif %}</td>
+            <td>
+                <a href="{% url 'user_admin:user_update' u.pk %}">Update</a>
+                /
+                <a href="{% url 'user_admin:user_delete' u.pk %}">Delete</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if is_paginated %}
+<div class="pagination">
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}{% if filter_form.search.value %}&search={{ filter_form.search.value }}{% endif %}">PF7 Prev</a>
+    {% endif %}
+    <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}{% if filter_form.search.value %}&search={{ filter_form.search.value }}{% endif %}">PF8 Next</a>
+    {% endif %}
+</div>
+{% endif %}
+
+{% else %}
+<p>No users found.</p>
+{% endif %}
+
+<div class="nav">
+    <a href="{% url 'user_admin:user_create' %}" class="btn">Add User</a>
+</div>
+{% endblock %}

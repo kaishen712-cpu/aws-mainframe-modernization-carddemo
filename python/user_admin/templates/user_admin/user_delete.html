@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Delete User — CardDemo{% endblock %}
+{% block program_name %}{{ program_name }}{% endblock %}
+{% block transaction_id %}{{ transaction_id }}{% endblock %}
+
+{% block content %}
+<h3>Delete User Confirmation</h3>
+
+<p>Are you sure you want to delete this user?</p>
+
+<table>
+    <tr><th>User ID</th><td>{{ target_user.username }}</td></tr>
+    <tr><th>First Name</th><td>{{ target_user.first_name }}</td></tr>
+    <tr><th>Last Name</th><td>{{ target_user.last_name }}</td></tr>
+    <tr><th>Type</th><td>{% if target_user.is_staff %}Admin{% else %}User{% endif %}</td></tr>
+</table>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">Yes — Delete User</button>
+    <a href="{% url 'user_admin:user_list' %}" class="btn">No — Cancel</a>
+</form>
+{% endblock %}

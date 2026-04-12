@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Reports — CardDemo{% endblock %}
+{% block program_name %}{{ program_name }}{% endblock %}
+{% block transaction_id %}{{ transaction_id }}{% endblock %}
+
+{% block content %}
+<h3>Report Generation</h3>
+
+<form method="post">
+    {% csrf_token %}
+    <table>
+        <thead>
+            <tr>
+                <th>Select</th>
+                <th>Report Type</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for report in report_types %}
+            <tr>
+                <td>
+                    <input type="radio" name="report_type"
+                           value="{{ report.code }}"
+                           id="report_{{ report.code }}">
+                </td>
+                <td><label for="report_{{ report.code }}">{{ report.name }}</label></td>
+                <td>{{ report.description }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <button type="submit">Enter — Generate Report</button>
+</form>
+{% endblock %}

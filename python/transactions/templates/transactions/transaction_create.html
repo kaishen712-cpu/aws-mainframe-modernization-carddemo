@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Add Transaction — CardDemo{% endblock %}
+{% block program_name %}{{ program_name }}{% endblock %}
+{% block transaction_id %}{{ transaction_id }}{% endblock %}
+
+{% block content %}
+<h3>Add Transaction</h3>
+
+<form method="post">
+    {% csrf_token %}
+    {% if form.errors %}
+    <ul class="errorlist">
+        {% for field, errors in form.errors.items %}
+        {% for error in errors %}
+        <li>{{ error }}</li>
+        {% endfor %}
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    <fieldset>
+        <legend>Key Fields</legend>
+        <div class="field-row">
+            <label for="id_acct_id">Account ID:</label>
+            {{ form.acct_id }}
+        </div>
+        <div class="field-row">
+            <label for="id_card_num">Card Number:</label>
+            {{ form.card_num }}
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>Transaction Details</legend>
+        <div class="field-row">
+            <label for="id_tran_type_cd">Type Code:</label>
+            {{ form.tran_type_cd }}
+        </div>
+        <div class="field-row">
+            <label for="id_tran_cat_cd">Category Code:</label>
+            {{ form.tran_cat_cd }}
+        </div>
+        <div class="field-row">
+            <label for="id_tran_source">Source:</label>
+            {{ form.tran_source }}
+        </div>
+        <div class="field-row">
+            <label for="id_tran_desc">Description:</label>
+            {{ form.tran_desc }}
+        </div>
+        <div class="field-row">
+            <label for="id_tran_amt">Amount:</label>
+            {{ form.tran_amt }}
+            <span class="helptext">{{ form.tran_amt.help_text }}</span>
+        </div>
+        <div class="field-row">
+            <label for="id_orig_date">Orig Date:</label>
+            {{ form.orig_date }}
+            <span class="helptext">{{ form.orig_date.help_text }}</span>
+        </div>
+        <div class="field-row">
+            <label for="id_proc_date">Proc Date:</label>
+            {{ form.proc_date }}
+            <span class="helptext">{{ form.proc_date.help_text }}</span>
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>Merchant Information</legend>
+        <div class="field-row">
+            <label for="id_merchant_id">Merchant ID:</label>
+            {{ form.merchant_id }}
+        </div>
+        <div class="field-row">
+            <label for="id_merchant_name">Merchant Name:</label>
+            {{ form.merchant_name }}
+        </div>
+        <div class="field-row">
+            <label for="id_merchant_city">Merchant City:</label>
+            {{ form.merchant_city }}
+        </div>
+        <div class="field-row">
+            <label for="id_merchant_zip">Merchant Zip:</label>
+            {{ form.merchant_zip }}
+        </div>
+    </fieldset>
+
+    <div class="field-row">
+        <label for="id_confirm">Confirm (Y/N):</label>
+        {{ form.confirm }}
+    </div>
+
+    <button type="submit">Enter — Submit</button>
+    <a href="{% url 'transactions:transaction_list' %}" class="btn">PF3 Cancel</a>
+</form>
+{% endblock %}

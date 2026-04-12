@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Card List — CardDemo{% endblock %}
+{% block program_name %}{{ program_name }}{% endblock %}
+{% block transaction_id %}{{ transaction_id }}{% endblock %}
+
+{% block content %}
+<h3>Credit Card List</h3>
+
+<form method="get" action="">
+    <div class="field-row">
+        <label for="id_acct_id">Account ID:</label>
+        {{ filter_form.acct_id }}
+    </div>
+    <div class="field-row">
+        <label for="id_card_num">Card Number:</label>
+        {{ filter_form.card_num }}
+    </div>
+    <button type="submit">Search</button>
+</form>
+
+<p>Type S for Detail, U to Update any record</p>
+
+{% if cards %}
+<table>
+    <thead>
+        <tr>
+            <th>Sel</th>
+            <th>Account ID</th>
+            <th>Card Number</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for card in cards %}
+        <tr>
+            <td>
+                <a href="{% url 'cards:card_detail' card.card_num %}">S</a>
+                /
+                <a href="{% url 'cards:card_update' card.card_num %}">U</a>
+            </td>
+            <td>{{ card.card_acct_id }}</td>
+            <td>{{ card.card_num }}</td>
+            <td>{{ card.card_active_status }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if is_paginated %}
+<div class="pagination">
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}{% if filter_form.acct_id.value %}&acct_id={{ filter_form.acct_id.value }}{% endif %}{% if filter_form.card_num.value %}&card_num={{ filter_form.card_num.value }}{% endif %}">PF7 Prev</a>
+    {% endif %}
+    <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}{% if filter_form.acct_id.value %}&acct_id={{ filter_form.acct_id.value }}{% endif %}{% if filter_form.card_num.value %}&card_num={{ filter_form.card_num.value }}{% endif %}">PF8 Next</a>
+    {% endif %}
+</div>
+{% endif %}
+
+{% else %}
+<p>No records found for this search condition.</p>
+{% endif %}
+{% endblock %}
