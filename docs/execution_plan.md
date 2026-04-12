@@ -105,8 +105,8 @@ tests/
     test_repositories.py           # (exists)
     test_date_validation.py        # (exists)
     test_utils.py                  # (exists)
-    test_batch_cbtrn02c.py         # incl. cache & batching tests (90% coverage)
-    test_batch_cbact04c.py         # Interest calculation (90% coverage)
+    test_batch_post_transactions.py # incl. cache & batching tests (90% coverage)
+    test_batch_interest.py           # Interest calculation (90% coverage)
     test_batch_statements.py
     test_online_auth.py            # Authentication tests (90% coverage)
     test_online_accounts.py
@@ -161,6 +161,21 @@ class RecordCache:
         if acct_id not in self._account_cache:
             self._account_cache[acct_id] = self._account_repo.lookup_by_id(acct_id)
         return self._account_cache[acct_id]
+
+    def apply_delta(self, acct_id: str, amount: Decimal) -> None:
+        """Update cached account balances in memory after accumulate().
+
+        Ensures credit limit validation for subsequent transactions on
+        the same account reflects prior transactions' impact within the
+        same batch run.
+        """
+        record = self._account_cache.get(acct_id)
+        if record is not None:
+            record.acct_curr_bal += amount
+            if amount >= 0:
+                record.acct_curr_cyc_credit += amount
+            else:
+                record.acct_curr_cyc_debit += amount
 
     def invalidate_account(self, acct_id: str) -> None:
         """Call after mutating an account record to keep cache consistent."""
@@ -252,14 +267,15 @@ These are the non-interactive batch COBOL programs. They have no CICS/BMS depend
 4. Create `batch/services/batch_account_updater.py` — the `BatchAccountUpdater` class (Perf Improvement 2)
 5. Translate `CBTRN02C.cbl` → `post_transactions` management command
    - Replace per-transaction VSAM READs with `RecordCache` lookups
-   - Replace per-transaction account REWRITEs with `BatchAccountUpdater.accumulate()`
+   - Replace per-transaction account REWRITEs with `BatchAccountUpdater.accumulate()` + `RecordCache.apply_delta()` (keeps cached balances current for credit limit checks)
    - Call `BatchAccountUpdater.flush()` after all transactions processed (atomic DB transaction)
-   - Preserve all validation logic (card lookup, credit limit, expiration check)
+   - Preserve all validation logic (card lookup, credit limit, expiration check) — **credit limit checks must use the cache's running balance** (reflects prior transactions in the same batch), not the original DB balance
    - Preserve reject-file writing for failed transactions
 6. Write unit tests: `tests/unit/test_batch_post_transactions.py` (**90% coverage**)
    - Test that cache prevents redundant reads (mock/spy on repository)
    - Test that account updates are batched (single write per account)
    - Test validation rules: invalid card, overlimit, expired account
+   - **Test multi-transaction credit limit enforcement**: two transactions on the same account where the second should be rejected based on the running balance from the first (verifies `apply_delta` keeps the cache consistent)
    - Test reject-file output for failed transactions
 7. Translate remaining batch programs
 8. Write unit tests for each (interest calc at **90% coverage**)
