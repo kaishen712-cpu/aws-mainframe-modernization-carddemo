@@ -65,10 +65,15 @@ class PasswordChangeForm(forms.Form):
     )
 
     def clean(self) -> dict[str, str]:
-        """Validate that new and confirm passwords match."""
+        """Validate that new and confirm passwords match and meet strength rules."""
         cleaned_data = super().clean()
         new_pwd = cleaned_data.get("new_password", "")
         confirm_pwd = cleaned_data.get("confirm_password", "")
         if new_pwd and confirm_pwd and new_pwd != confirm_pwd:
             raise forms.ValidationError("Passwords do not match.")
+        # Run AUTH_PASSWORD_VALIDATORS (MinimumLength, CommonPassword, etc.)
+        if new_pwd:
+            from django.contrib.auth.password_validation import validate_password
+
+            validate_password(new_pwd)
         return cleaned_data

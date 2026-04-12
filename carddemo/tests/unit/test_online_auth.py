@@ -897,6 +897,113 @@ class TestURLRouting(TestCase):
 # ---------------------------------------------------------------------------
 
 
+class TestPasswordResetMiddleware(TestCase):
+    """Tests for PasswordResetMiddleware enforcing mandatory password change.
+
+    Business rule: SEC-USR-PWD-RESET flag must be enforced on every request,
+    not just at login time. Users cannot bypass the password change by
+    navigating directly to protected URLs.
+    """
+
+    def setUp(self) -> None:
+        """Set up test data."""
+        reset_throttle_store()
+        self.client = Client()
+        self.menu_url = reverse("core:main_menu")
+        self.admin_menu_url = reverse("core:admin_menu")
+        self.password_change_url = reverse("accounts:password_change")
+        self.logout_url = reverse("accounts:logout")
+        self.reset_user = CardDemoUser.objects.create_user(
+            username="mwuser",
+            password="TempMwPass123!",
+            user_type=CardDemoUser.UserType.REGULAR,
+            password_reset_required=True,
+        )
+
+    def test_reset_user_redirected_from_menu(self) -> None:
+        """User with password_reset_required cannot access main menu."""
+        self.client.login(username="mwuser", password="TempMwPass123!")
+        response = self.client.get(self.menu_url)
+        assert response.status_code == 302
+        assert response.url == self.password_change_url
+
+    def test_reset_user_can_access_password_change(self) -> None:
+        """User with password_reset_required CAN access password change page."""
+        self.client.login(username="mwuser", password="TempMwPass123!")
+        response = self.client.get(self.password_change_url)
+        assert response.status_code == 200
+
+    def test_reset_user_can_logout(self) -> None:
+        """User with password_reset_required CAN log out."""
+        self.client.login(username="mwuser", password="TempMwPass123!")
+        response = self.client.get(self.logout_url)
+        assert response.status_code == 302
+
+    def test_normal_user_not_blocked_by_middleware(self) -> None:
+        """User without password_reset_required accesses menu normally."""
+        CardDemoUser.objects.create_user(
+            username="mwnormal",
+            password="NormalMwPass123!",
+            user_type=CardDemoUser.UserType.REGULAR,
+        )
+        self.client.login(username="mwnormal", password="NormalMwPass123!")
+        response = self.client.get(self.menu_url)
+        assert response.status_code == 200
+
+    def test_after_password_change_middleware_allows_access(self) -> None:
+        """After changing password, middleware allows access to menu."""
+        self.client.login(username="mwuser", password="TempMwPass123!")
+        self.client.post(
+            self.password_change_url,
+            {
+                "new_password": "NewSecureMwPass123!",
+                "confirm_password": "NewSecureMwPass123!",
+            },
+        )
+        response = self.client.get(self.menu_url)
+        assert response.status_code == 200
+
+
+class TestPasswordValidation(TestCase):
+    """Tests for password strength validation via AUTH_PASSWORD_VALIDATORS."""
+
+    def test_common_password_rejected(self) -> None:
+        """Common passwords like 'password' should be rejected."""
+        from accounts.forms import PasswordChangeForm
+
+        form = PasswordChangeForm(
+            data={
+                "new_password": "password",
+                "confirm_password": "password",
+            }
+        )
+        assert not form.is_valid()
+
+    def test_numeric_only_password_rejected(self) -> None:
+        """Purely numeric passwords should be rejected."""
+        from accounts.forms import PasswordChangeForm
+
+        form = PasswordChangeForm(
+            data={
+                "new_password": "12345678",
+                "confirm_password": "12345678",
+            }
+        )
+        assert not form.is_valid()
+
+    def test_strong_password_accepted(self) -> None:
+        """Strong passwords that meet all validators should be accepted."""
+        from accounts.forms import PasswordChangeForm
+
+        form = PasswordChangeForm(
+            data={
+                "new_password": "SecurePass123!",
+                "confirm_password": "SecurePass123!",
+            }
+        )
+        assert form.is_valid()
+
+
 class TestFullAuthFlow(TestCase):
     """End-to-end authentication flow tests."""
 
