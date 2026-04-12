@@ -9,3 +9,39 @@ batch-app/markers/*
 carddemo.egg-info/
 __pycache__/
 *.pyc
+
+# Python
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Environment
+.env
+.env.local
+.env.production
+
+# IDE
+*.swp
+*.swo
+*~
+
+# Docker
+docker-compose.override.yml
+
+# Static files (collected)
+staticfiles/
+
+# Secrets baseline (detect-secrets)
+.secrets.baseline

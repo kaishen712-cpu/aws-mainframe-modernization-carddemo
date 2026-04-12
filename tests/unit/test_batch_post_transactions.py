@@ -187,9 +187,7 @@ class TestPostTransactionsValidation:
 
     def test_reject_expired_account(self) -> None:
         """Transaction after account expiration is rejected (reason 103)."""
-        Account.objects.filter(acct_id="00000000001").update(
-            acct_expiration_date="2020-01-01"
-        )
+        Account.objects.filter(acct_id="00000000001").update(acct_expiration_date="2020-01-01")
         _create_daily_txn(orig_ts="2025-06-15-10.30.00.000000")
         out = StringIO()
         call_command("post_transactions", stdout=out)

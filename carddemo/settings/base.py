@@ -2,6 +2,9 @@
 
 Common settings shared across all environments. Environment-specific
 overrides live in development.py, production.py, and testing.py.
+
+All credentials are read from environment variables via ``django-environ``.
+Never commit secrets to source control.
 """
 
 from __future__ import annotations
@@ -16,7 +19,7 @@ import environ
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 env = environ.Env()
 
-# Read .env file if it exists (not required)
+# Read .env file if it exists (not required in production)
 env_file = BASE_DIR / ".env"
 if env_file.is_file():
     env.read_env(str(env_file))
@@ -59,7 +62,7 @@ ROOT_URLCONF = "carddemo.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -83,6 +86,11 @@ DATABASES = {
         default="postgres://carddemo:carddemo@localhost:5432/carddemo",
     ),
 }
+
+# ---------------------------------------------------------------------------
+# Session — database-backed by default; overridden in production for Redis
+# ---------------------------------------------------------------------------
+SESSION_ENGINE = "django.contrib.sessions.backends.db"
 
 # ---------------------------------------------------------------------------
 # Password validation
@@ -114,7 +122,8 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # ---------------------------------------------------------------------------
-# Logging — never log account numbers, card numbers or amounts in plain text
+# Logging — SECURITY: never log account numbers, card numbers, or
+# transaction amounts in plain text (CPS 234 sensitive data requirement).
 # ---------------------------------------------------------------------------
 LOGGING = {
     "version": 1,
@@ -122,6 +131,10 @@ LOGGING = {
     "formatters": {
         "verbose": {
             "format": "{levelname} {asctime} {module} {message}",
+            "style": "{",
+        },
+        "json": {
+            "format": "{levelname} {asctime} {name} {module} {message}",
             "style": "{",
         },
     },
@@ -139,6 +152,11 @@ LOGGING = {
         "batch": {
             "handlers": ["console"],
             "level": "INFO",
+            "propagate": False,
+        },
+        "django.db.backends": {
+            "handlers": ["console"],
+            "level": "WARNING",
             "propagate": False,
         },
     },

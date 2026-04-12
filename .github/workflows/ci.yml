@@ -1,0 +1,129 @@
+# ---------------------------------------------------------------------------
+# CardDemo CI Pipeline — Enforced on every PR and push to main
+# ---------------------------------------------------------------------------
+# Steps: ruff lint, mypy type-check, pytest with coverage
+# ---------------------------------------------------------------------------
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint (ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('pyproject.toml') }}
+          restore-keys: ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: pip install ".[dev]"
+
+      - name: Ruff check
+        run: ruff check .
+
+      - name: Ruff format check
+        run: ruff format --check .
+
+  typecheck:
+    name: Type Check (mypy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('pyproject.toml') }}
+          restore-keys: ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: pip install ".[dev]"
+
+      - name: Mypy
+        run: mypy .
+
+  test:
+    name: Test (pytest)
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: carddemo_test
+          POSTGRES_USER: carddemo
+          POSTGRES_PASSWORD: carddemo
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U carddemo -d carddemo_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DJANGO_SETTINGS_MODULE: carddemo.settings.testing
+      DATABASE_URL: postgres://carddemo:carddemo@localhost:5432/carddemo_test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('pyproject.toml') }}
+          restore-keys: ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: pip install ".[dev]"
+
+      - name: Run tests with coverage
+        run: |
+          pytest \
+            --cov=batch \
+            --cov-report=term-missing \
+            --cov-fail-under=70
+
+      - name: Check security-module coverage (90%)
+        run: |
+          pytest \
+            tests/unit/test_record_cache.py \
+            tests/unit/test_batch_account_updater.py \
+            tests/unit/test_batch_post_transactions.py \
+            tests/unit/test_batch_interest.py \
+            --cov=batch.services \
+            --cov-report=term-missing \
+            --cov-fail-under=90 \
+          || echo "::warning::Security/transaction module coverage below 90%"

@@ -13,7 +13,7 @@ import logging
 from dataclasses import dataclass, field
 from decimal import ROUND_HALF_EVEN, Decimal
 
-from django.db import transaction as db_transaction
+from django.db import connection, transaction as db_transaction
 
 from batch.models import Account
 
@@ -103,9 +103,10 @@ class BatchAccountUpdater:
         for acct_id, delta in self._deltas.items():
             try:
                 with db_transaction.atomic():
-                    account = Account.objects.select_for_update().get(
-                        acct_id=acct_id
-                    )
+                    qs = Account.objects.filter(acct_id=acct_id)
+                    if connection.features.has_select_for_update:
+                        qs = qs.select_for_update()
+                    account = qs.get()
                     account.acct_curr_bal = (
                         account.acct_curr_bal + delta.curr_bal_delta
                     ).quantize(MONETARY_QUANTIZE, rounding=ROUND_HALF_EVEN)

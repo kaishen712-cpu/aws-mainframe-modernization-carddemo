@@ -107,9 +107,7 @@ class TestCalcInterestDisclosureGroupFallback:
         Translated from paragraph 1200-A-GET-DEFAULT-INT-RATE in CBACT04C.cbl.
         """
         # Remove account-specific rate
-        DisclosureGroup.objects.filter(
-            dis_acct_group_id="GROUP1"
-        ).delete()
+        DisclosureGroup.objects.filter(dis_acct_group_id="GROUP1").delete()
         # Add DEFAULT rate
         # HUMAN REVIEW: hardcoded default interest rate
         DisclosureGroup.objects.create(
