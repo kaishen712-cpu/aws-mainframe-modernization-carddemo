@@ -78,7 +78,7 @@
         {% if user.is_admin_user %}
         <a href="{% url 'core:admin_menu' %}" class="btn btn-secondary">Admin Menu</a>
         {% endif %}
-        <a href="{% url 'accounts:logout' %}" class="btn btn-secondary">Sign Off (F3)</a>
+        <form method="post" action="{% url 'accounts:logout' %}" style="display:inline;">{% csrf_token %}<button type="submit" class="btn btn-secondary">Sign Off (F3)</button></form>
     </div>
 </div>
 {% endblock %}
