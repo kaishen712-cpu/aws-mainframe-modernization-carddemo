@@ -125,5 +125,4 @@ jobs:
             tests/unit/test_batch_interest.py \
             --cov=batch.services \
             --cov-report=term-missing \
-            --cov-fail-under=90 \
-          || echo "::warning::Security/transaction module coverage below 90%"
+            --cov-fail-under=90
