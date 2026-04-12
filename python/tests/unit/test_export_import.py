@@ -580,15 +580,15 @@ class TestValidateRecordFormat:
         assert error is not None
         assert "sequence_num" in error
 
-    def test_unknown_record_type(self) -> None:
+    def test_unknown_record_type_passes_header_validation(self) -> None:
+        """Unknown types pass header validation; dispatcher handles them."""
         data = {
             "record_type": "Z",
             "timestamp": "2024-01-15 10:30:00.00",
             "sequence_num": 1,
         }
         error = validate_record_format(data)
-        assert error is not None
-        assert "Unknown" in error
+        assert error is None
 
     def test_all_valid_types(self) -> None:
         for rec_type in ["C", "A", "X", "T", "D"]:
@@ -643,7 +643,7 @@ class TestParseRecords:
             "fico_credit_score": 750,
         }
         record = parse_customer_record(data)
-        assert record.cust_id == "1"
+        assert record.cust_id == "000000001"
         assert record.cust_first_name == "Test"
         assert record.cust_addr_line_1 == "123 Test St"
 
@@ -711,7 +711,7 @@ class TestParseRecords:
     def test_parse_customer_missing_fields_defaults(self) -> None:
         """Missing fields default to empty strings or defaults."""
         record = parse_customer_record({})
-        assert record.cust_id == ""
+        assert record.cust_id == "000000000"
         assert record.cust_first_name == ""
         assert record.cust_addr_line_1 == ""
 
@@ -1031,7 +1031,7 @@ class TestRunImport:
         try:
             result = run_import(path)
             assert result.stats.error_count == 1
-            assert result.stats.unknown_type_count == 0
+            assert result.stats.unknown_type_count == 1
             assert len(result.errors) == 1
         finally:
             os.unlink(path)

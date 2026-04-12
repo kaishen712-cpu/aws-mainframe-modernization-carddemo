@@ -174,17 +174,6 @@ def validate_record_format(data: dict[str, Any]) -> str | None:
         if field not in data:
             return f"Missing required field: {field}"
 
-    rec_type = data.get("record_type", "")
-    valid_types = {
-        EXPORT_REC_TYPE_CUSTOMER,
-        EXPORT_REC_TYPE_ACCOUNT,
-        EXPORT_REC_TYPE_CARD_XREF,
-        EXPORT_REC_TYPE_TRANSACTION,
-        EXPORT_REC_TYPE_CARD,
-    }
-    if rec_type not in valid_types:
-        return f"Unknown record type: {rec_type}"
-
     return None
 
 
@@ -204,7 +193,7 @@ def parse_customer_record(data: dict[str, Any]) -> CustomerRecord:
     phone_nums = data.get("phone_nums", ["", ""])
 
     return CustomerRecord(
-        cust_id=str(data.get("cust_id", "")),
+        cust_id=str(data.get("cust_id", "")).zfill(9),
         cust_first_name=str(data.get("first_name", "")),
         cust_middle_name=str(data.get("middle_name", "")),
         cust_last_name=str(data.get("last_name", "")),
@@ -268,7 +257,7 @@ def parse_xref_record(data: dict[str, Any]) -> CardXrefRecord:
     return CardXrefRecord(
         xref_card_num=str(data.get("card_num", "")),
         xref_cust_id=str(data.get("cust_id", "")),
-        xref_acct_id=str(data.get("acct_id", "")),
+        xref_acct_id=str(data.get("acct_id", "")).zfill(11),
     )
 
 
@@ -291,7 +280,7 @@ def parse_transaction_record(data: dict[str, Any]) -> TransactionRecord:
         tran_source=str(data.get("source", "")),
         tran_desc=str(data.get("desc", "")),
         tran_amt=_safe_decimal_str(data.get("amt", "0")),
-        tran_merchant_id=str(data.get("merchant_id", "")),
+        tran_merchant_id=str(data.get("merchant_id", "")).zfill(9),
         tran_merchant_name=str(data.get("merchant_name", "")),
         tran_merchant_city=str(data.get("merchant_city", "")),
         tran_merchant_zip=str(data.get("merchant_zip", "")),
@@ -315,8 +304,8 @@ def parse_card_record(data: dict[str, Any]) -> CardRecord:
     """
     return CardRecord(
         card_num=str(data.get("card_num", "")),
-        card_acct_id=str(data.get("acct_id", "")),
-        card_cvv_cd=str(data.get("cvv_cd", "")),
+        card_acct_id=str(data.get("acct_id", "")).zfill(11),
+        card_cvv_cd=str(data.get("cvv_cd", "")).zfill(3),
         card_embossed_name=str(data.get("embossed_name", "")),
         card_expiration_date=str(data.get("expiration_date", "")),
         card_active_status=str(data.get("active_status", "")),
