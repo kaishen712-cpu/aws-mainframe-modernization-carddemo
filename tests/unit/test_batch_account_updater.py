@@ -173,9 +173,7 @@ class TestBatchAccountUpdaterFlush:
         account.refresh_from_db()
         assert account.acct_curr_bal == Decimal("1100.00")
 
-    def test_flush_multiple_accounts(
-        self, account: Account, second_account: Account
-    ) -> None:
+    def test_flush_multiple_accounts(self, account: Account, second_account: Account) -> None:
         """Flush updates multiple accounts correctly."""
         updater = BatchAccountUpdater()
         updater.accumulate("00000000001", Decimal("100.00"))

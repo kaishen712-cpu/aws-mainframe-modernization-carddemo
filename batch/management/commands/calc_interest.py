@@ -83,9 +83,7 @@ class Command(BaseCommand):
             # Account break — when account changes, post accumulated interest
             if tcatbal.trancat_acct_id != current_acct_id:
                 if current_acct_id and total_interest != Decimal("0"):
-                    self._update_account_balance(
-                        current_acct_id, total_interest
-                    )
+                    self._update_account_balance(current_acct_id, total_interest)
                     accounts_processed += 1
                 current_acct_id = tcatbal.trancat_acct_id
                 total_interest = Decimal("0")
@@ -114,9 +112,7 @@ class Command(BaseCommand):
             xref = self._get_xref_for_account(current_acct_id)
             card_num = xref.xref_card_num if xref else ""
 
-            proc_ts = datetime.now(tz=UTC).strftime(
-                "%Y-%m-%d-%H.%M.%S.%f"
-            )[:26]
+            proc_ts = datetime.now(tz=UTC).strftime("%Y-%m-%d-%H.%M.%S.%f")[:26]
 
             # Translated from paragraph 1300-B-WRITE-TX in CBACT04C.cbl
             # COBOL: MOVE '01' TO TRAN-TYPE-CD, MOVE '05' TO TRAN-CAT-CD
@@ -147,9 +143,7 @@ class Command(BaseCommand):
             f"Interest transactions: {interest_txns_created}"
         )
 
-    def _get_interest_rate(
-        self, acct_id: str, type_cd: str, cat_cd: str
-    ) -> Decimal | None:
+    def _get_interest_rate(self, acct_id: str, type_cd: str, cat_cd: str) -> Decimal | None:
         """Look up the interest rate from the disclosure group.
 
         Translated from paragraph 1200-GET-INTEREST-RATE in CBACT04C.cbl.
@@ -187,9 +181,7 @@ class Command(BaseCommand):
             )
             return disc_group.dis_int_rate
         except DisclosureGroup.DoesNotExist:
-            logger.warning(
-                "No disclosure group for %s/%s/%s", group_id, type_cd, cat_cd
-            )
+            logger.warning("No disclosure group for %s/%s/%s", group_id, type_cd, cat_cd)
             return None
 
     def _get_xref_for_account(self, acct_id: str) -> CardXref | None:
@@ -199,9 +191,7 @@ class Command(BaseCommand):
         """
         return CardXref.objects.filter(xref_acct_id=acct_id).first()
 
-    def _update_account_balance(
-        self, acct_id: str, interest_amount: Decimal
-    ) -> None:
+    def _update_account_balance(self, acct_id: str, interest_amount: Decimal) -> None:
         """Update the account balance with accumulated interest.
 
         Translated from account update logic in CBACT04C.cbl.

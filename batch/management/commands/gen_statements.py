@@ -85,46 +85,34 @@ class Command(BaseCommand):
                 continue
 
             if output_format in ("text", "both"):
-                self._write_text_statement(
-                    output_dir, xref.xref_acct_id, statement
-                )
+                self._write_text_statement(output_dir, xref.xref_acct_id, statement)
             if output_format in ("html", "both"):
-                self._write_html_statement(
-                    output_dir, xref.xref_acct_id, statement
-                )
+                self._write_html_statement(output_dir, xref.xref_acct_id, statement)
             statements_generated += 1
 
         self.stdout.write(f"Statements generated: {statements_generated}")
 
-    def _build_statement(
-        self, xref: CardXref
-    ) -> dict[str, object] | None:
+    def _build_statement(self, xref: CardXref) -> dict[str, object] | None:
         """Build statement data for a single account.
 
         Gathers account, customer, and transaction information.
         """
-        account = Account.objects.filter(
-            acct_id=xref.xref_acct_id
-        ).first()
+        account = Account.objects.filter(acct_id=xref.xref_acct_id).first()
         if account is None:
             return None
 
-        customer = Customer.objects.filter(
-            cust_id=xref.xref_cust_id
-        ).first()
+        customer = Customer.objects.filter(cust_id=xref.xref_cust_id).first()
 
         # Get all cards for this account
         card_nums = list(
-            CardXref.objects.filter(
-                xref_acct_id=xref.xref_acct_id
-            ).values_list("xref_card_num", flat=True)
+            CardXref.objects.filter(xref_acct_id=xref.xref_acct_id).values_list(
+                "xref_card_num", flat=True
+            )
         )
 
         # Get transactions for all cards on this account
         transactions = list(
-            Transaction.objects.filter(
-                tran_card_num__in=card_nums
-            ).order_by("tran_orig_ts")
+            Transaction.objects.filter(tran_card_num__in=card_nums).order_by("tran_orig_ts")
         )
 
         return {
@@ -132,9 +120,7 @@ class Command(BaseCommand):
             "customer": customer,
             "card_nums": card_nums,
             "transactions": transactions,
-            "statement_date": datetime.now(tz=UTC).strftime(
-                "%Y-%m-%d"
-            ),
+            "statement_date": datetime.now(tz=UTC).strftime("%Y-%m-%d"),
         }
 
     def _write_text_statement(
@@ -157,9 +143,7 @@ class Command(BaseCommand):
         lines.append("")
 
         if customer:
-            lines.append(
-                f"Name: {customer.cust_first_name} {customer.cust_last_name}"
-            )
+            lines.append(f"Name: {customer.cust_first_name} {customer.cust_last_name}")
             lines.append(f"Address: {customer.cust_addr_line_1}")
             if customer.cust_addr_line_2:
                 lines.append(f"         {customer.cust_addr_line_2}")
@@ -176,9 +160,7 @@ class Command(BaseCommand):
 
         for txn in transactions:
             lines.append(
-                f"  {txn.tran_orig_ts[:10]}  "
-                f"{txn.tran_desc[:30]:<30}  "
-                f"{txn.tran_amt:>10}"
+                f"  {txn.tran_orig_ts[:10]}  {txn.tran_desc[:30]:<30}  {txn.tran_amt:>10}"
             )
 
         lines.append("-" * 60)

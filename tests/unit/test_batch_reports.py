@@ -123,7 +123,6 @@ class TestGenTransactionReport:
         assert "DAILY TRANSACTION REPORT" in content
 
 
-
 class TestGenTransactionReportEmpty:
     """Tests for gen_transaction_report on empty database."""
 
@@ -165,7 +164,6 @@ class TestGenCategoryReport:
         assert output_file.exists()
 
 
-
 class TestGenCategoryReportEmpty:
     """Tests for gen_category_report on empty database."""
 
@@ -182,9 +180,7 @@ class TestGenStatements:
 
     def test_text_statement_generated(self, tmp_path: Path) -> None:
         """Text statement file created for account."""
-        call_command(
-            "gen_statements", output_dir=str(tmp_path), format="text"
-        )
+        call_command("gen_statements", output_dir=str(tmp_path), format="text")
         stmt_file = tmp_path / "stmt_00000000001.txt"
         assert stmt_file.exists()
         content = stmt_file.read_text()
@@ -193,9 +189,7 @@ class TestGenStatements:
 
     def test_html_statement_generated(self, tmp_path: Path) -> None:
         """HTML statement file created for account."""
-        call_command(
-            "gen_statements", output_dir=str(tmp_path), format="html"
-        )
+        call_command("gen_statements", output_dir=str(tmp_path), format="html")
         stmt_file = tmp_path / "stmt_00000000001.html"
         assert stmt_file.exists()
         content = stmt_file.read_text()
@@ -203,9 +197,7 @@ class TestGenStatements:
 
     def test_both_formats_generated(self, tmp_path: Path) -> None:
         """Both text and HTML statements generated."""
-        call_command(
-            "gen_statements", output_dir=str(tmp_path), format="both"
-        )
+        call_command("gen_statements", output_dir=str(tmp_path), format="both")
         assert (tmp_path / "stmt_00000000001.txt").exists()
         assert (tmp_path / "stmt_00000000001.html").exists()
 
@@ -223,11 +215,8 @@ class TestGenStatements:
     def test_statement_count_output(self, tmp_path: Path) -> None:
         """Command reports number of statements generated."""
         out = StringIO()
-        call_command(
-            "gen_statements", output_dir=str(tmp_path), stdout=out
-        )
+        call_command("gen_statements", output_dir=str(tmp_path), stdout=out)
         assert "Statements generated: 1" in out.getvalue()
-
 
 
 class TestGenStatementsEmpty:
@@ -236,9 +225,7 @@ class TestGenStatementsEmpty:
     def test_empty_database(self, tmp_path: Path, db: None) -> None:
         """No statements generated on empty database."""
         out = StringIO()
-        call_command(
-            "gen_statements", output_dir=str(tmp_path), stdout=out
-        )
+        call_command("gen_statements", output_dir=str(tmp_path), stdout=out)
         assert "Statements generated: 0" in out.getvalue()
 
 
@@ -272,14 +259,11 @@ class TestGenStatementsV2:
         assert "Statements (v2) generated: 1" in out.getvalue()
 
 
-
 class TestGenStatementsV2Empty:
     """Tests for gen_statements_v2 on empty database."""
 
     def test_empty_database(self, tmp_path: Path, db: None) -> None:
         """No V2 statements on empty database."""
         out = StringIO()
-        call_command(
-            "gen_statements_v2", output_dir=str(tmp_path), stdout=out
-        )
+        call_command("gen_statements_v2", output_dir=str(tmp_path), stdout=out)
         assert "Statements (v2) generated: 0" in out.getvalue()

@@ -71,23 +71,17 @@ class Command(BaseCommand):
             self.stdout.write(f"  Group ID: {account.acct_group_id}")
 
             if show_cards:
-                cards = Card.objects.filter(
-                    card_acct_id=account.acct_id
-                )
+                cards = Card.objects.filter(card_acct_id=account.acct_id)
                 for card in cards:
                     self.stdout.write(
-                        f"  Card: ****{card.card_num[-4:]} "
-                        f"Status: {card.card_active_status}"
+                        f"  Card: ****{card.card_num[-4:]} Status: {card.card_active_status}"
                     )
 
             if show_xref:
-                xrefs = CardXref.objects.filter(
-                    xref_acct_id=account.acct_id
-                )
+                xrefs = CardXref.objects.filter(xref_acct_id=account.acct_id)
                 for xref in xrefs:
                     self.stdout.write(
-                        f"  Xref: ****{xref.xref_card_num[-4:]} "
-                        f"Cust: {xref.xref_cust_id}"
+                        f"  Xref: ****{xref.xref_card_num[-4:]} Cust: {xref.xref_cust_id}"
                     )
 
             self.stdout.write("-" * 50)

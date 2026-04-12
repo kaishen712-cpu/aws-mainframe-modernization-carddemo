@@ -20,22 +20,26 @@ class Account(models.Model):
     Original COBOL record name: ACCOUNT-RECORD
     """
 
-    acct_id = models.CharField(
-        max_length=11, unique=True, help_text="ACCT-ID PIC 9(11)"
-    )
+    acct_id = models.CharField(max_length=11, unique=True, help_text="ACCT-ID PIC 9(11)")
     acct_active_status = models.CharField(
         max_length=1, default="", help_text="ACCT-ACTIVE-STATUS PIC X(01)"
     )
     acct_curr_bal = models.DecimalField(
-        max_digits=12, decimal_places=2, default=0,
+        max_digits=12,
+        decimal_places=2,
+        default=0,
         help_text="ACCT-CURR-BAL PIC S9(10)V99",
     )
     acct_credit_limit = models.DecimalField(
-        max_digits=12, decimal_places=2, default=0,
+        max_digits=12,
+        decimal_places=2,
+        default=0,
         help_text="ACCT-CREDIT-LIMIT PIC S9(10)V99",
     )
     acct_cash_credit_limit = models.DecimalField(
-        max_digits=12, decimal_places=2, default=0,
+        max_digits=12,
+        decimal_places=2,
+        default=0,
         help_text="ACCT-CASH-CREDIT-LIMIT PIC S9(10)V99",
     )
     acct_open_date = models.CharField(
@@ -48,11 +52,15 @@ class Account(models.Model):
         max_length=10, default="", help_text="ACCT-REISSUE-DATE PIC X(10)"
     )
     acct_curr_cyc_credit = models.DecimalField(
-        max_digits=12, decimal_places=2, default=0,
+        max_digits=12,
+        decimal_places=2,
+        default=0,
         help_text="ACCT-CURR-CYC-CREDIT PIC S9(10)V99",
     )
     acct_curr_cyc_debit = models.DecimalField(
-        max_digits=12, decimal_places=2, default=0,
+        max_digits=12,
+        decimal_places=2,
+        default=0,
         help_text="ACCT-CURR-CYC-DEBIT PIC S9(10)V99",
     )
     acct_addr_zip = models.CharField(
@@ -78,15 +86,11 @@ class Card(models.Model):
     Original COBOL record name: CARD-RECORD
     """
 
-    card_num = models.CharField(
-        max_length=16, unique=True, help_text="CARD-NUM PIC X(16)"
-    )
+    card_num = models.CharField(max_length=16, unique=True, help_text="CARD-NUM PIC X(16)")
     card_acct_id = models.CharField(
         max_length=11, db_index=True, help_text="CARD-ACCT-ID PIC 9(11)"
     )
-    card_cvv_cd = models.CharField(
-        max_length=3, default="", help_text="CARD-CVV-CD PIC 9(03)"
-    )
+    card_cvv_cd = models.CharField(max_length=3, default="", help_text="CARD-CVV-CD PIC 9(03)")
     card_embossed_name = models.CharField(
         max_length=50, default="", help_text="CARD-EMBOSSED-NAME PIC X(50)"
     )
@@ -139,9 +143,7 @@ class Customer(models.Model):
     Original COBOL record name: CUSTOMER-RECORD
     """
 
-    cust_id = models.CharField(
-        max_length=9, unique=True, help_text="CUST-ID PIC 9(09)"
-    )
+    cust_id = models.CharField(max_length=9, unique=True, help_text="CUST-ID PIC 9(09)")
     cust_first_name = models.CharField(
         max_length=25, default="", help_text="CUST-FIRST-NAME PIC X(25)"
     )
@@ -175,9 +177,7 @@ class Customer(models.Model):
     cust_phone_num_2 = models.CharField(
         max_length=15, default="", help_text="CUST-PHONE-NUM-2 PIC X(15)"
     )
-    cust_ssn = models.CharField(
-        max_length=9, default="", help_text="CUST-SSN PIC 9(09)"
-    )
+    cust_ssn = models.CharField(max_length=9, default="", help_text="CUST-SSN PIC 9(09)")
     cust_govt_issued_id = models.CharField(
         max_length=20, default="", help_text="CUST-GOVT-ISSUED-ID PIC X(20)"
     )
@@ -210,23 +210,15 @@ class Transaction(models.Model):
     Original COBOL record name: TRAN-RECORD
     """
 
-    tran_id = models.CharField(
-        max_length=16, unique=True, help_text="TRAN-ID PIC X(16)"
-    )
-    tran_type_cd = models.CharField(
-        max_length=2, default="", help_text="TRAN-TYPE-CD PIC X(02)"
-    )
-    tran_cat_cd = models.CharField(
-        max_length=4, default="", help_text="TRAN-CAT-CD PIC 9(04)"
-    )
-    tran_source = models.CharField(
-        max_length=10, default="", help_text="TRAN-SOURCE PIC X(10)"
-    )
-    tran_desc = models.CharField(
-        max_length=100, default="", help_text="TRAN-DESC PIC X(100)"
-    )
+    tran_id = models.CharField(max_length=16, unique=True, help_text="TRAN-ID PIC X(16)")
+    tran_type_cd = models.CharField(max_length=2, default="", help_text="TRAN-TYPE-CD PIC X(02)")
+    tran_cat_cd = models.CharField(max_length=4, default="", help_text="TRAN-CAT-CD PIC 9(04)")
+    tran_source = models.CharField(max_length=10, default="", help_text="TRAN-SOURCE PIC X(10)")
+    tran_desc = models.CharField(max_length=100, default="", help_text="TRAN-DESC PIC X(100)")
     tran_amt = models.DecimalField(
-        max_digits=11, decimal_places=2, default=0,
+        max_digits=11,
+        decimal_places=2,
+        default=0,
         help_text="TRAN-AMT PIC S9(09)V99",
     )
     tran_merchant_id = models.CharField(
@@ -244,12 +236,8 @@ class Transaction(models.Model):
     tran_card_num = models.CharField(
         max_length=16, db_index=True, help_text="TRAN-CARD-NUM PIC X(16)"
     )
-    tran_orig_ts = models.CharField(
-        max_length=26, default="", help_text="TRAN-ORIG-TS PIC X(26)"
-    )
-    tran_proc_ts = models.CharField(
-        max_length=26, default="", help_text="TRAN-PROC-TS PIC X(26)"
-    )
+    tran_orig_ts = models.CharField(max_length=26, default="", help_text="TRAN-ORIG-TS PIC X(26)")
+    tran_proc_ts = models.CharField(max_length=26, default="", help_text="TRAN-PROC-TS PIC X(26)")
 
     class Meta:
         db_table = "transaction"
@@ -267,9 +255,7 @@ class DailyTransaction(models.Model):
     Original COBOL record name: DALYTRAN-RECORD
     """
 
-    dalytran_id = models.CharField(
-        max_length=16, unique=True, help_text="DALYTRAN-ID PIC X(16)"
-    )
+    dalytran_id = models.CharField(max_length=16, unique=True, help_text="DALYTRAN-ID PIC X(16)")
     dalytran_type_cd = models.CharField(
         max_length=2, default="", help_text="DALYTRAN-TYPE-CD PIC X(02)"
     )
@@ -283,7 +269,9 @@ class DailyTransaction(models.Model):
         max_length=100, default="", help_text="DALYTRAN-DESC PIC X(100)"
     )
     dalytran_amt = models.DecimalField(
-        max_digits=11, decimal_places=2, default=0,
+        max_digits=11,
+        decimal_places=2,
+        default=0,
         help_text="DALYTRAN-AMT PIC S9(09)V99",
     )
     dalytran_merchant_id = models.CharField(
@@ -325,17 +313,13 @@ class TranCatBal(models.Model):
     Composite key: (TRANCAT-ACCT-ID, TRANCAT-TYPE-CD, TRANCAT-CD)
     """
 
-    trancat_acct_id = models.CharField(
-        max_length=11, help_text="TRANCAT-ACCT-ID PIC 9(11)"
-    )
-    trancat_type_cd = models.CharField(
-        max_length=2, help_text="TRANCAT-TYPE-CD PIC X(02)"
-    )
-    trancat_cd = models.CharField(
-        max_length=4, help_text="TRANCAT-CD PIC 9(04)"
-    )
+    trancat_acct_id = models.CharField(max_length=11, help_text="TRANCAT-ACCT-ID PIC 9(11)")
+    trancat_type_cd = models.CharField(max_length=2, help_text="TRANCAT-TYPE-CD PIC X(02)")
+    trancat_cd = models.CharField(max_length=4, help_text="TRANCAT-CD PIC 9(04)")
     tran_cat_bal = models.DecimalField(
-        max_digits=11, decimal_places=2, default=0,
+        max_digits=11,
+        decimal_places=2,
+        default=0,
         help_text="TRAN-CAT-BAL PIC S9(09)V99",
     )
 
@@ -361,25 +345,19 @@ class DisclosureGroup(models.Model):
     that should be validated before migration.
     """
 
-    dis_acct_group_id = models.CharField(
-        max_length=10, help_text="DIS-ACCT-GROUP-ID PIC X(10)"
-    )
-    dis_tran_type_cd = models.CharField(
-        max_length=2, help_text="DIS-TRAN-TYPE-CD PIC X(02)"
-    )
-    dis_tran_cat_cd = models.CharField(
-        max_length=4, help_text="DIS-TRAN-CAT-CD PIC 9(04)"
-    )
+    dis_acct_group_id = models.CharField(max_length=10, help_text="DIS-ACCT-GROUP-ID PIC X(10)")
+    dis_tran_type_cd = models.CharField(max_length=2, help_text="DIS-TRAN-TYPE-CD PIC X(02)")
+    dis_tran_cat_cd = models.CharField(max_length=4, help_text="DIS-TRAN-CAT-CD PIC 9(04)")
     dis_int_rate = models.DecimalField(
-        max_digits=6, decimal_places=2, default=0,
+        max_digits=6,
+        decimal_places=2,
+        default=0,
         help_text="DIS-INT-RATE PIC S9(04)V99 — HUMAN REVIEW: hardcoded interest rate",
     )
 
     class Meta:
         db_table = "disclosure_group"
-        unique_together = [
-            ("dis_acct_group_id", "dis_tran_type_cd", "dis_tran_cat_cd")
-        ]
+        unique_together = [("dis_acct_group_id", "dis_tran_type_cd", "dis_tran_cat_cd")]
         verbose_name = "Disclosure Group"
         verbose_name_plural = "Disclosure Groups"
 
@@ -397,9 +375,7 @@ class TransactionType(models.Model):
     Original COBOL record name: TRAN-TYPE-RECORD
     """
 
-    tran_type = models.CharField(
-        max_length=2, unique=True, help_text="TRAN-TYPE PIC X(02)"
-    )
+    tran_type = models.CharField(max_length=2, unique=True, help_text="TRAN-TYPE PIC X(02)")
     tran_type_desc = models.CharField(
         max_length=50, default="", help_text="TRAN-TYPE-DESC PIC X(50)"
     )
@@ -421,12 +397,8 @@ class TransactionCategory(models.Model):
     Composite key: (TRAN-TYPE-CD, TRAN-CAT-CD)
     """
 
-    tran_type_cd = models.CharField(
-        max_length=2, help_text="TRAN-TYPE-CD PIC X(02)"
-    )
-    tran_cat_cd = models.CharField(
-        max_length=4, help_text="TRAN-CAT-CD PIC 9(04)"
-    )
+    tran_type_cd = models.CharField(max_length=2, help_text="TRAN-TYPE-CD PIC X(02)")
+    tran_cat_cd = models.CharField(max_length=4, help_text="TRAN-CAT-CD PIC 9(04)")
     tran_cat_type_desc = models.CharField(
         max_length=50, default="", help_text="TRAN-CAT-TYPE-DESC PIC X(50)"
     )
@@ -448,9 +420,7 @@ class UserSecurity(models.Model):
     Original COBOL record name: SEC-USER-DATA
     """
 
-    sec_usr_id = models.CharField(
-        max_length=8, unique=True, help_text="SEC-USR-ID PIC X(08)"
-    )
+    sec_usr_id = models.CharField(max_length=8, unique=True, help_text="SEC-USR-ID PIC X(08)")
     sec_usr_fname = models.CharField(
         max_length=20, default="", help_text="SEC-USR-FNAME PIC X(20)"
     )
@@ -460,9 +430,7 @@ class UserSecurity(models.Model):
     sec_usr_pwd = models.CharField(
         max_length=128, default="", help_text="SEC-USR-PWD — hashed, never plain text"
     )
-    sec_usr_type = models.CharField(
-        max_length=1, default="", help_text="SEC-USR-TYPE PIC X(01)"
-    )
+    sec_usr_type = models.CharField(max_length=1, default="", help_text="SEC-USR-TYPE PIC X(01)")
 
     class Meta:
         db_table = "user_security"
@@ -484,23 +452,15 @@ class TransactionIndex(models.Model):
     trnx_card_num = models.CharField(
         max_length=16, db_index=True, help_text="TRNX-CARD-NUM PIC X(16)"
     )
-    trnx_id = models.CharField(
-        max_length=16, help_text="TRNX-ID PIC X(16)"
-    )
-    trnx_type_cd = models.CharField(
-        max_length=2, default="", help_text="TRNX-TYPE-CD PIC X(02)"
-    )
-    trnx_cat_cd = models.CharField(
-        max_length=4, default="", help_text="TRNX-CAT-CD PIC 9(04)"
-    )
-    trnx_source = models.CharField(
-        max_length=10, default="", help_text="TRNX-SOURCE PIC X(10)"
-    )
-    trnx_desc = models.CharField(
-        max_length=100, default="", help_text="TRNX-DESC PIC X(100)"
-    )
+    trnx_id = models.CharField(max_length=16, help_text="TRNX-ID PIC X(16)")
+    trnx_type_cd = models.CharField(max_length=2, default="", help_text="TRNX-TYPE-CD PIC X(02)")
+    trnx_cat_cd = models.CharField(max_length=4, default="", help_text="TRNX-CAT-CD PIC 9(04)")
+    trnx_source = models.CharField(max_length=10, default="", help_text="TRNX-SOURCE PIC X(10)")
+    trnx_desc = models.CharField(max_length=100, default="", help_text="TRNX-DESC PIC X(100)")
     trnx_amt = models.DecimalField(
-        max_digits=11, decimal_places=2, default=0,
+        max_digits=11,
+        decimal_places=2,
+        default=0,
         help_text="TRNX-AMT PIC S9(09)V99",
     )
     trnx_merchant_id = models.CharField(
@@ -515,12 +475,8 @@ class TransactionIndex(models.Model):
     trnx_merchant_zip = models.CharField(
         max_length=10, default="", help_text="TRNX-MERCHANT-ZIP PIC X(10)"
     )
-    trnx_orig_ts = models.CharField(
-        max_length=26, default="", help_text="TRNX-ORIG-TS PIC X(26)"
-    )
-    trnx_proc_ts = models.CharField(
-        max_length=26, default="", help_text="TRNX-PROC-TS PIC X(26)"
-    )
+    trnx_orig_ts = models.CharField(max_length=26, default="", help_text="TRNX-ORIG-TS PIC X(26)")
+    trnx_proc_ts = models.CharField(max_length=26, default="", help_text="TRNX-PROC-TS PIC X(26)")
 
     class Meta:
         db_table = "transaction_index"

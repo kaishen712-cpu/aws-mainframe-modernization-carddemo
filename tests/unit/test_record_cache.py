@@ -180,9 +180,7 @@ class TestRecordCacheInvalidation:
         cache.invalidate_account("99999999999")
         assert cache.account_cache_size == 0
 
-    def test_clear_empties_all_caches(
-        self, xref: CardXref, account: Account
-    ) -> None:
+    def test_clear_empties_all_caches(self, xref: CardXref, account: Account) -> None:
         """Clear removes all cached entries."""
         cache = RecordCache()
         cache.get_xref("4111111111111111")

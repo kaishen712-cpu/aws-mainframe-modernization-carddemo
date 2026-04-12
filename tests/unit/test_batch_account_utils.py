@@ -64,17 +64,19 @@ class TestSeedAccounts:
         """Accounts seeded from JSON file."""
         json_file = tmp_path / "accounts.json"
         json_file.write_text(
-            json.dumps([{
-                "acct_id": "00000000098",
-                "acct_active_status": "Y",
-                "acct_curr_bal": "750.00",
-                "acct_credit_limit": "3000.00",
-            }])
+            json.dumps(
+                [
+                    {
+                        "acct_id": "00000000098",
+                        "acct_active_status": "Y",
+                        "acct_curr_bal": "750.00",
+                        "acct_credit_limit": "3000.00",
+                    }
+                ]
+            )
         )
         out = StringIO()
-        call_command(
-            "seed_accounts", str(json_file), format="json", stdout=out
-        )
+        call_command("seed_accounts", str(json_file), format="json", stdout=out)
         assert Account.objects.filter(acct_id="00000000098").exists()
         assert "Created: 1" in out.getvalue()
 
@@ -85,10 +87,7 @@ class TestSeedAccounts:
             acct_active_status="N",
         )
         csv_file = tmp_path / "accounts.csv"
-        csv_file.write_text(
-            "acct_id,acct_active_status\n"
-            "00000000099,Y\n"
-        )
+        csv_file.write_text("acct_id,acct_active_status\n00000000099,Y\n")
         out = StringIO()
         call_command("seed_accounts", str(csv_file), format="csv", stdout=out)
         assert "Updated: 1" in out.getvalue()
@@ -134,7 +133,6 @@ class TestListAccounts:
         out = StringIO()
         call_command("list_accounts", show_xref=True, stdout=out)
         assert "Cust:" in out.getvalue()
-
 
 
 class TestListAccountsEmpty:

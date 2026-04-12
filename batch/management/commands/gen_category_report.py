@@ -81,9 +81,7 @@ class Command(BaseCommand):
 
             # Look up type and category descriptions
             type_desc = self._get_type_desc(tcatbal.trancat_type_cd)
-            cat_desc = self._get_category_desc(
-                tcatbal.trancat_type_cd, tcatbal.trancat_cd
-            )
+            cat_desc = self._get_category_desc(tcatbal.trancat_type_cd, tcatbal.trancat_cd)
 
             lines.append(
                 f"  Type: {tcatbal.trancat_type_cd} ({type_desc})  "
@@ -106,9 +104,7 @@ class Command(BaseCommand):
 
     def _get_type_desc(self, type_cd: str) -> str:
         """Look up transaction type description."""
-        tran_type = TransactionType.objects.filter(
-            tran_type=type_cd
-        ).first()
+        tran_type = TransactionType.objects.filter(tran_type=type_cd).first()
         return tran_type.tran_type_desc if tran_type else "Unknown"
 
     def _get_category_desc(self, type_cd: str, cat_cd: str) -> str:

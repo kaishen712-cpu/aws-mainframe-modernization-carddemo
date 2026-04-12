@@ -49,9 +49,7 @@ class Command(BaseCommand):
 
         Translated from PROCEDURE DIVISION of CBSTM03B.CBL.
         """
-        output_dir = Path(
-            str(options.get("output_dir", "statements_v2") or "statements_v2")
-        )
+        output_dir = Path(str(options.get("output_dir", "statements_v2") or "statements_v2"))
         acct_filter = str(options.get("acct_id", "") or "")
 
         output_dir.mkdir(parents=True, exist_ok=True)
@@ -65,13 +63,9 @@ class Command(BaseCommand):
             self._generate_statement(output_dir, account)
             statements_generated += 1
 
-        self.stdout.write(
-            f"Statements (v2) generated: {statements_generated}"
-        )
+        self.stdout.write(f"Statements (v2) generated: {statements_generated}")
 
-    def _generate_statement(
-        self, output_dir: Path, account: Account
-    ) -> None:
+    def _generate_statement(self, output_dir: Path, account: Account) -> None:
         """Generate a single account statement in summary format.
 
         Translated from the file processing logic in CBSTM03B.CBL.
@@ -79,15 +73,15 @@ class Command(BaseCommand):
         """
         # Get all cards for this account
         card_nums = list(
-            CardXref.objects.filter(
-                xref_acct_id=account.acct_id
-            ).values_list("xref_card_num", flat=True)
+            CardXref.objects.filter(xref_acct_id=account.acct_id).values_list(
+                "xref_card_num", flat=True
+            )
         )
 
         # Get transactions grouped by type
-        transactions = Transaction.objects.filter(
-            tran_card_num__in=card_nums
-        ).order_by("tran_type_cd", "tran_orig_ts")
+        transactions = Transaction.objects.filter(tran_card_num__in=card_nums).order_by(
+            "tran_type_cd", "tran_orig_ts"
+        )
 
         # Group by type code
         grouped: dict[str, list[Transaction]] = {}
@@ -106,9 +100,7 @@ class Command(BaseCommand):
 
         for type_cd in sorted(grouped):
             type_txns = grouped[type_cd]
-            subtotal = sum(
-                (txn.tran_amt for txn in type_txns), Decimal("0")
-            )
+            subtotal = sum((txn.tran_amt for txn in type_txns), Decimal("0"))
             lines.append(f"Type {type_cd}: {len(type_txns)} transactions, subtotal: {subtotal}")
             for txn in type_txns:
                 lines.append(

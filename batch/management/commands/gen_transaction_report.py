@@ -50,17 +50,13 @@ class Command(BaseCommand):
         lines.append("=" * 80)
         lines.append("")
 
-        daily_transactions = DailyTransaction.objects.all().order_by(
-            "dalytran_id"
-        )
+        daily_transactions = DailyTransaction.objects.all().order_by("dalytran_id")
         transaction_count = 0
 
         for daily_txn in daily_transactions:
             # Look up cross-reference
             # Translated from XREF lookup in CBTRN01C.cbl
-            xref = CardXref.objects.filter(
-                xref_card_num=daily_txn.dalytran_card_num
-            ).first()
+            xref = CardXref.objects.filter(xref_card_num=daily_txn.dalytran_card_num).first()
 
             acct_id = xref.xref_acct_id if xref else "UNKNOWN"
 
@@ -68,9 +64,7 @@ class Command(BaseCommand):
             # Translated from ACCOUNT lookup in CBTRN01C.cbl
             account = None
             if xref:
-                account = Account.objects.filter(
-                    acct_id=xref.xref_acct_id
-                ).first()
+                account = Account.objects.filter(acct_id=xref.xref_acct_id).first()
 
             # Format report line
             lines.append(f"Transaction ID  : {daily_txn.dalytran_id}")

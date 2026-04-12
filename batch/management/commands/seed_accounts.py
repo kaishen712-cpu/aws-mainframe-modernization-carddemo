@@ -78,9 +78,7 @@ class Command(BaseCommand):
             else:
                 updated_count += 1
 
-        self.stdout.write(
-            f"Created: {created_count}, Updated: {updated_count}"
-        )
+        self.stdout.write(f"Created: {created_count}, Updated: {updated_count}")
 
     def _read_csv(self, file_path: Path) -> list[dict[str, str]]:
         """Read account records from a CSV file."""

@@ -396,3 +396,82 @@ These optional features make CardDemo an even more useful resource for customers
 
 Last updated: April 2025
 
+---
+
+## Python Migration
+
+CardDemo is being migrated from COBOL to Python using Django and PostgreSQL. See [docs/execution_plan.md](docs/execution_plan.md) for the full migration plan and [docs/python-translation.md](docs/python-translation.md) for the COBOL-to-Python mapping table.
+
+### Quick Start (Python)
+
+```bash
+# Install dependencies
+pip install ".[dev]"
+
+# Set up environment
+export DJANGO_SETTINGS_MODULE=carddemo.settings.development
+
+# Run database migrations
+python manage.py migrate
+
+# Start the development server
+python manage.py runserver
+```
+
+### Running Tests
+
+```bash
+# Run the full test suite
+pytest
+
+# Run with coverage report
+pytest --cov=batch --cov-report=term-missing
+
+# Run with coverage enforcement (70% minimum)
+pytest --cov=batch --cov-report=term-missing --cov-fail-under=70
+```
+
+### Linting and Type Checking
+
+```bash
+# Lint
+ruff check .
+
+# Format check
+ruff format --check .
+
+# Type check
+mypy .
+```
+
+### Docker
+
+```bash
+# Start all services (Django + PostgreSQL + Redis)
+docker compose up -d
+
+# Run migrations
+docker compose exec web python manage.py migrate
+
+# Stop services
+docker compose down
+```
+
+### Batch Jobs
+
+Batch jobs are Django management commands replacing the original JCL jobs:
+
+```bash
+python manage.py post_transactions    # Daily transaction posting
+python manage.py calc_interest        # Interest calculation
+python manage.py gen_statements       # Statement generation
+python manage.py gen_transaction_report  # Transaction report
+```
+
+### Documentation
+
+- [Execution Plan](docs/execution_plan.md) — Full migration plan
+- [Python Translation Mapping](docs/python-translation.md) — COBOL program → Python module mapping
+- [Deployment Guide](docs/deployment.md) — Production deployment instructions
+- [Data Model](docs/data-model.md) — Database schema documentation
+
