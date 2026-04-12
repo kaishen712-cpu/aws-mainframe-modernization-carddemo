@@ -232,21 +232,30 @@ class TestLogoutView(TestCase):
             user_type=CardDemoUser.UserType.REGULAR,
         )
 
-    def test_logout_redirects_to_login(self) -> None:
-        """Logout clears session and redirects to login.
+    def test_logout_via_post_redirects_to_login(self) -> None:
+        """POST to logout clears session and redirects to login.
 
         Translated from COSGN00C.cbl SEND-PLAIN-TEXT:
         Displays CCDA-MSG-THANK-YOU and EXEC CICS RETURN.
+        Requires POST to prevent cross-site logout (Django 5.0+ best practice).
         """
         self.client.login(username="testuser", password="TestPass123!")
-        response = self.client.get(self.logout_url)
+        response = self.client.post(self.logout_url)
         assert response.status_code == 302
         assert response.url == reverse("accounts:login")
 
-    def test_logout_clears_session(self) -> None:
-        """Session should be cleared after logout."""
+    def test_logout_get_does_not_log_out(self) -> None:
+        """GET to logout should NOT perform logout (CSRF protection)."""
         self.client.login(username="testuser", password="TestPass123!")
         self.client.get(self.logout_url)
+        # User should still be authenticated — can access protected page
+        response = self.client.get(reverse("core:main_menu"))
+        assert response.status_code == 200
+
+    def test_logout_clears_session(self) -> None:
+        """Session should be cleared after POST logout."""
+        self.client.login(username="testuser", password="TestPass123!")
+        self.client.post(self.logout_url)
         # Verify session is cleared by trying to access a protected page
         response = self.client.get(reverse("core:main_menu"))
         assert response.status_code == 302  # Redirected to login
@@ -258,7 +267,7 @@ class TestLogoutView(TestCase):
         MOVE CCDA-MSG-THANK-YOU TO WS-MESSAGE
         """
         self.client.login(username="testuser", password="TestPass123!")
-        response = self.client.get(self.logout_url, follow=True)
+        response = self.client.post(self.logout_url, follow=True)
         assert b"Thank you for using CardDemo" in response.content
 
 
@@ -739,8 +748,8 @@ class TestAuthServices(TestCase):
         request = factory.get("/", REMOTE_ADDR="192.168.1.1")
         assert get_client_ip(request) == "192.168.1.1"
 
-    def test_get_client_ip_forwarded(self) -> None:
-        """Client IP extraction from X-Forwarded-For header."""
+    def test_get_client_ip_ignores_xff_without_num_proxies(self) -> None:
+        """X-Forwarded-For is ignored when NUM_PROXIES is not set."""
         from django.test import RequestFactory
 
         from accounts.services import get_client_ip
@@ -749,7 +758,21 @@ class TestAuthServices(TestCase):
         request = factory.get(
             "/", HTTP_X_FORWARDED_FOR="10.0.0.1, 10.0.0.2", REMOTE_ADDR="127.0.0.1"
         )
-        assert get_client_ip(request) == "10.0.0.1"
+        assert get_client_ip(request) == "127.0.0.1"
+
+    @override_settings(NUM_PROXIES=1)
+    def test_get_client_ip_xff_with_num_proxies(self) -> None:
+        """X-Forwarded-For uses Nth-from-right when NUM_PROXIES is set."""
+        from django.test import RequestFactory
+
+        from accounts.services import get_client_ip
+
+        factory = RequestFactory()
+        # With NUM_PROXIES=1, take the last (rightmost) address
+        request = factory.get(
+            "/", HTTP_X_FORWARDED_FOR="spoofed, 10.0.0.2", REMOTE_ADDR="127.0.0.1"
+        )
+        assert get_client_ip(request) == "10.0.0.2"
 
     def test_reset_throttle_store(self) -> None:
         """reset_throttle_store should clear all tracked attempts."""
@@ -936,7 +959,7 @@ class TestPasswordResetMiddleware(TestCase):
     def test_reset_user_can_logout(self) -> None:
         """User with password_reset_required CAN log out."""
         self.client.login(username="mwuser", password="TempMwPass123!")
-        response = self.client.get(self.logout_url)
+        response = self.client.post(self.logout_url)
         assert response.status_code == 302
 
     def test_normal_user_not_blocked_by_middleware(self) -> None:
@@ -1003,6 +1026,23 @@ class TestPasswordValidation(TestCase):
         )
         assert form.is_valid()
 
+    def test_password_similar_to_username_rejected(self) -> None:
+        """Password similar to username should be rejected by UserAttributeSimilarity."""
+        from accounts.forms import PasswordChangeForm
+
+        user = CardDemoUser.objects.create_user(
+            username="validatoruser",
+            password="OldPass123!",
+        )
+        form = PasswordChangeForm(
+            data={
+                "new_password": "validatoruser",
+                "confirm_password": "validatoruser",
+            },
+            user=user,
+        )
+        assert not form.is_valid()
+
 
 class TestFullAuthFlow(TestCase):
     """End-to-end authentication flow tests."""
@@ -1048,8 +1088,8 @@ class TestFullAuthFlow(TestCase):
         response = self.client.get(self.admin_menu_url)
         assert response.status_code == 302
 
-        # Logout
-        response = self.client.get(self.logout_url)
+        # Logout (POST required)
+        response = self.client.post(self.logout_url)
         assert response.status_code == 302
 
         # Cannot access menu after logout
@@ -1074,6 +1114,6 @@ class TestFullAuthFlow(TestCase):
         response = self.client.get(self.menu_url)
         assert response.status_code == 200
 
-        # Logout
-        response = self.client.get(self.logout_url)
+        # Logout (POST required)
+        response = self.client.post(self.logout_url)
         assert response.status_code == 302

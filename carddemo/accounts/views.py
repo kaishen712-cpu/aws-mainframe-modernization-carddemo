@@ -146,7 +146,11 @@ def logout_view(request: HttpRequest) -> HttpResponse:
     Translated from COSGN00C.cbl SEND-PLAIN-TEXT paragraph:
     COBOL: Displays CCDA-MSG-THANK-YOU and returns (EXEC CICS RETURN).
     Django: Clears session and redirects to login page.
+
+    Requires POST to prevent cross-site logout via GET (Django 5.0+ best practice).
     """
+    if request.method != "POST":
+        return redirect("accounts:login")
     logout(request)
     messages.info(request, "Thank you for using CardDemo application...")
     return redirect("accounts:login")
@@ -164,13 +168,13 @@ def password_change_view(request: HttpRequest) -> HttpResponse:
     if request.method == "POST":
         return _process_password_change(request)
 
-    form = PasswordChangeForm()
+    form = PasswordChangeForm(user=request.user)
     return render(request, "accounts/password_change.html", {"form": form})
 
 
 def _process_password_change(request: HttpRequest) -> HttpResponse:
     """Process the password change form submission."""
-    form = PasswordChangeForm(request.POST)
+    form = PasswordChangeForm(data=request.POST, user=request.user)
     if not form.is_valid():
         return render(request, "accounts/password_change.html", {"form": form})
 

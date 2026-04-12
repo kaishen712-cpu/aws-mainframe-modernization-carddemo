@@ -29,15 +29,26 @@ _login_attempts: dict[str, list[float]] = {}
 def get_client_ip(request: HttpRequest) -> str:
     """Extract client IP from request.
 
+    Uses ``REMOTE_ADDR`` by default, which is set by the WSGI server and
+    cannot be spoofed by the client.  ``X-Forwarded-For`` is only used
+    when ``NUM_PROXIES`` is configured in Django settings, and in that
+    case the Nth IP **from the right** is taken (where N = NUM_PROXIES).
+    This prevents attackers from rotating the header to bypass throttling.
+
     Args:
         request: The Django HTTP request.
 
     Returns:
         Client IP address string.
     """
-    x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
-    if x_forwarded_for:
-        return x_forwarded_for.split(",")[0].strip()
+    num_proxies: int = getattr(settings, "NUM_PROXIES", 0)
+    if num_proxies > 0:
+        x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR", "")
+        if x_forwarded_for:
+            addrs = [a.strip() for a in x_forwarded_for.split(",")]
+            # Take the Nth address from the right (proxy-appended)
+            if len(addrs) >= num_proxies:
+                return addrs[-num_proxies]
     return request.META.get("REMOTE_ADDR", "unknown")
 
 

@@ -7,7 +7,12 @@ Translated from COSGN00C.cbl sign-on screen fields:
 """
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from django import forms
+
+if TYPE_CHECKING:
+    from accounts.models import CardDemoUser
 
 
 class LoginForm(forms.Form):
@@ -47,6 +52,9 @@ class PasswordChangeForm(forms.Form):
     """Password change form for first-time login / forced reset.
 
     Business rule: SEC-USR-PWD-RESET flag triggers this form.
+    Accepts an optional ``user`` kwarg so that
+    ``UserAttributeSimilarityValidator`` can check the new password
+    against the user's attributes (username, email, name).
     """
 
     new_password = forms.CharField(
@@ -64,6 +72,16 @@ class PasswordChangeForm(forms.Form):
         min_length=8,
     )
 
+    def __init__(
+        self,
+        *args: object,
+        user: CardDemoUser | None = None,
+        **kwargs: object,
+    ) -> None:
+        """Store the user for password-similarity validation."""
+        self.user = user
+        super().__init__(*args, **kwargs)
+
     def clean(self) -> dict[str, str]:
         """Validate that new and confirm passwords match and meet strength rules."""
         cleaned_data = super().clean()
@@ -72,8 +90,9 @@ class PasswordChangeForm(forms.Form):
         if new_pwd and confirm_pwd and new_pwd != confirm_pwd:
             raise forms.ValidationError("Passwords do not match.")
         # Run AUTH_PASSWORD_VALIDATORS (MinimumLength, CommonPassword, etc.)
+        # Pass user so UserAttributeSimilarityValidator works correctly.
         if new_pwd:
             from django.contrib.auth.password_validation import validate_password
 
-            validate_password(new_pwd)
+            validate_password(new_pwd, user=self.user)
         return cleaned_data
