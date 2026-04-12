@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Update User — CardDemo{% endblock %}
+{% block program_name %}{{ program_name }}{% endblock %}
+{% block transaction_id %}{{ transaction_id }}{% endblock %}
+
+{% block content %}
+<h3>Update User: {{ target_user.username }}</h3>
+
+<form method="post">
+    {% csrf_token %}
+    {% if form.errors %}
+    <ul class="errorlist">
+        {% for field, errors in form.errors.items %}
+        {% for error in errors %}
+        <li>{{ error }}</li>
+        {% endfor %}
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    <div class="field-row">
+        <label>User ID:</label>
+        <span>{{ target_user.username }} (read-only)</span>
+    </div>
+    <div class="field-row">
+        <label for="id_first_name">First Name:</label>
+        {{ form.first_name }}
+    </div>
+    <div class="field-row">
+        <label for="id_last_name">Last Name:</label>
+        {{ form.last_name }}
+    </div>
+    <div class="field-row">
+        <label for="id_user_type">User Type:</label>
+        {{ form.user_type }}
+    </div>
+    <div class="field-row">
+        <label for="id_new_password">New Password:</label>
+        {{ form.new_password }}
+        <span class="helptext">{{ form.new_password.help_text }}</span>
+    </div>
+
+    <button type="submit">Enter — Update User</button>
+    <a href="{% url 'user_admin:user_list' %}" class="btn">PF3 Cancel</a>
+</form>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Transaction Detail — CardDemo{% endblock %}
+{% block program_name %}{{ program_name }}{% endblock %}
+{% block transaction_id %}{{ transaction_id }}{% endblock %}
+
+{% block content %}
+<h3>Transaction Details</h3>
+
+<table>
+    <tr><th>Transaction ID</th><td>{{ transaction.tran_id }}</td></tr>
+    <tr><th>Type Code</th><td>{{ transaction.tran_type_cd }}</td></tr>
+    <tr><th>Category Code</th><td>{{ transaction.tran_cat_cd }}</td></tr>
+    <tr><th>Source</th><td>{{ transaction.tran_source }}</td></tr>
+    <tr><th>Description</th><td>{{ transaction.tran_desc }}</td></tr>
+    <tr><th>Amount</th><td>{{ transaction.tran_amt }}</td></tr>
+    <tr><th>Card Number</th><td>****{{ transaction.tran_card_num|slice:"-4:" }}</td></tr>
+    <tr><th>Merchant ID</th><td>{{ transaction.tran_merchant_id }}</td></tr>
+    <tr><th>Merchant Name</th><td>{{ transaction.tran_merchant_name }}</td></tr>
+    <tr><th>Merchant City</th><td>{{ transaction.tran_merchant_city }}</td></tr>
+    <tr><th>Merchant Zip</th><td>{{ transaction.tran_merchant_zip }}</td></tr>
+    <tr><th>Origination Date</th><td>{{ transaction.tran_orig_ts }}</td></tr>
+    <tr><th>Processing Date</th><td>{{ transaction.tran_proc_ts }}</td></tr>
+</table>
+
+<div class="nav">
+    <a href="{% url 'transactions:transaction_list' %}" class="btn">PF3 Back</a>
+</div>
+{% endblock %}

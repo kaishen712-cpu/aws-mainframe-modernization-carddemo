@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Bill Payment — CardDemo{% endblock %}
+{% block program_name %}{{ program_name }}{% endblock %}
+{% block transaction_id %}{{ transaction_id }}{% endblock %}
+
+{% block content %}
+<h3>Bill Payment</h3>
+
+<form method="post">
+    {% csrf_token %}
+    {% if form.errors %}
+    <ul class="errorlist">
+        {% for field, errors in form.errors.items %}
+        {% for error in errors %}
+        <li>{{ error }}</li>
+        {% endfor %}
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    <div class="field-row">
+        <label for="id_acct_id">Account ID:</label>
+        {{ form.acct_id }}
+    </div>
+    <div class="field-row">
+        <label for="id_card_num">Card Number:</label>
+        {{ form.card_num }}
+    </div>
+    <div class="field-row">
+        <label for="id_payment_amount">Payment Amount:</label>
+        {{ form.payment_amount }}
+        <span class="helptext">{{ form.payment_amount.help_text }}</span>
+    </div>
+
+    <button type="submit">Enter — Process Payment</button>
+    <a href="{% url 'transactions:transaction_list' %}" class="btn">PF3 Cancel</a>
+</form>
+{% endblock %}

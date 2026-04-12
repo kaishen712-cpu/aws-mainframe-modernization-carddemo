@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Card Detail — CardDemo{% endblock %}
+{% block program_name %}{{ program_name }}{% endblock %}
+{% block transaction_id %}{{ transaction_id }}{% endblock %}
+
+{% block content %}
+<h3>Credit Card Details</h3>
+
+<table>
+    <tr><th>Account ID</th><td>{{ card.card_acct_id }}</td></tr>
+    <tr><th>Card Number</th><td>{{ card.card_num }}</td></tr>
+    <tr><th>CVV Code</th><td>***</td></tr>
+    <tr><th>Name on Card</th><td>{{ card.card_embossed_name }}</td></tr>
+    <tr><th>Expiration Date</th><td>{{ card.card_expiration_date }}</td></tr>
+    <tr><th>Active Status</th><td>{{ card.card_active_status }}</td></tr>
+</table>
+
+<div class="nav">
+    <a href="{% url 'cards:card_list' %}" class="btn">PF3 Back</a>
+    <a href="{% url 'cards:card_update' card.card_num %}" class="btn">Update</a>
+</div>
+{% endblock %}
