@@ -57,5 +57,5 @@ def wait_seconds(seconds: float) -> None:
     if seconds < 0:
         raise ValueError(f"Wait time must be non-negative, got {seconds}")
 
-    centiseconds = int(seconds * 100)
+    centiseconds = round(seconds * 100)
     wait_centiseconds(centiseconds)
