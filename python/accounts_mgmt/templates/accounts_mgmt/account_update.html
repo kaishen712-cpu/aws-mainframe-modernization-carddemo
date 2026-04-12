@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Account Update — CardDemo{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-section { margin-bottom: 20px; }
+    .form-section h3 { border-bottom: 1px solid #333; padding-bottom: 5px; }
+    .form-row { margin-bottom: 8px; }
+    .form-row label { display: inline-block; width: 200px; }
+    .form-row input { background: #0a0a1e; color: #00ff41; border: 1px solid #333; padding: 4px 8px; font-family: 'Courier New', monospace; }
+    .form-row input:focus { border-color: #00ff41; outline: none; }
+    .phone-group input { width: 60px; margin-right: 5px; }
+    .phone-group input:last-child { width: 80px; }
+    .errors { color: #ff4141; font-size: 12px; }
+    .btn { background: #0f3460; color: #00ff41; border: 1px solid #00ff41; padding: 8px 20px; cursor: pointer; font-family: 'Courier New', monospace; }
+    .btn:hover { background: #16213e; }
+</style>
+{% endblock %}
+
+{% block content %}
+<h2>Account Update</h2>
+<p style="font-size:12px; color:#888;">
+    Translated from COACTUPC.cbl — Account Update program (4,237 lines).
+</p>
+
+{% if form.non_field_errors %}
+<div class="errors">
+    {% for error in form.non_field_errors %}
+        <p>{{ error }}</p>
+    {% endfor %}
+</div>
+{% endif %}
+
+<form method="post" action="">
+    {% csrf_token %}
+
+    <div class="form-section">
+        <h3>Account: {{ account.acct_id }}</h3>
+        {% for field in form %}
+            {% if field.name|slice:":4" == "acct" %}
+            <div class="form-row">
+                <label for="{{ field.id_for_label }}">{{ field.label }}:</label>
+                {{ field }}
+                {% if field.errors %}
+                <span class="errors">{{ field.errors.0 }}</span>
+                {% endif %}
+            </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+
+    <div class="form-section">
+        <h3>Customer Information</h3>
+        {% for field in form %}
+            {% if field.name|slice:":4" == "cust" and "phone" not in field.name %}
+            <div class="form-row">
+                <label for="{{ field.id_for_label }}">{{ field.label }}:</label>
+                {{ field }}
+                {% if field.errors %}
+                <span class="errors">{{ field.errors.0 }}</span>
+                {% endif %}
+            </div>
+            {% endif %}
+        {% endfor %}
+
+        <div class="form-row">
+            <label>Phone 1 (NPA-NXX-XXXX):</label>
+            <span class="phone-group">
+                {{ form.cust_phone_num_1_area }}
+                {{ form.cust_phone_num_1_prefix }}
+                {{ form.cust_phone_num_1_line }}
+            </span>
+        </div>
+        <div class="form-row">
+            <label>Phone 2 (NPA-NXX-XXXX):</label>
+            <span class="phone-group">
+                {{ form.cust_phone_num_2_area }}
+                {{ form.cust_phone_num_2_prefix }}
+                {{ form.cust_phone_num_2_line }}
+            </span>
+        </div>
+    </div>
+
+    <div style="margin-top: 20px;">
+        <button type="submit" class="btn">Save Changes</button>
+        <a href="{% url 'accounts_mgmt:account_detail' acct_id=account.acct_id %}" class="btn" style="text-decoration:none; margin-left:10px;">Cancel</a>
+    </div>
+</form>
+{% endblock %}
