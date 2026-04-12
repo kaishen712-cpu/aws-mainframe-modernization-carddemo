@@ -290,9 +290,12 @@ def apply_account_updates(
         else:
             setattr(customer, field_name, new_val)
 
+    from django.db import transaction
+
     try:
-        account.save()
-        customer.save()
+        with transaction.atomic():
+            account.save()
+            customer.save()
     except Exception:
         logger.exception("Failed to save account/customer update")
         return UpdateResult(
