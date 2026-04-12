@@ -20,7 +20,7 @@ import logging
 from typing import TYPE_CHECKING
 
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.shortcuts import redirect, render
 
 if TYPE_CHECKING:
@@ -183,8 +183,8 @@ def _process_password_change(request: HttpRequest) -> HttpResponse:
     user.password_reset_required = False  # type: ignore[union-attr]
     user.save()  # type: ignore[union-attr]
 
-    # Re-authenticate after password change
-    login(request, user)
+    # Keep user logged in after password change (patch session auth hash in-place)
+    update_session_auth_hash(request, user)
 
     redirect_url = get_menu_redirect_url(user.user_type)  # type: ignore[union-attr]
     messages.success(request, "Password changed successfully.")
