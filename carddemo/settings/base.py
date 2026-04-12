@@ -17,7 +17,7 @@ import environ
 # Paths
 # ---------------------------------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-env = environ.Env()
+env = environ.Env()  # type: ignore[attr-defined]
 
 # Read .env file if it exists (not required in production)
 env_file = BASE_DIR / ".env"

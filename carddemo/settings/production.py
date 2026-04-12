@@ -20,7 +20,7 @@ ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS")
 # ---------------------------------------------------------------------------
 # Database -- connection pooling via CONN_MAX_AGE
 # ---------------------------------------------------------------------------
-DATABASES["default"]["CONN_MAX_AGE"] = env.int(  # type: ignore[index]  # noqa: F405
+DATABASES["default"]["CONN_MAX_AGE"] = env.int(  # noqa: F405
     "DJANGO_CONN_MAX_AGE", default=600
 )
 

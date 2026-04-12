@@ -31,7 +31,7 @@ include = ["carddemo*", "batch*"]
 [tool.ruff]
 line-length = 99
 target-version = "py311"
-exclude = ["*/migrations/*"]
+exclude = ["*/migrations/*", "python/*", "build/*"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "UP", "S", "B", "A", "C4", "SIM", "TCH"]
@@ -48,6 +48,18 @@ ignore = [
 strict = true
 plugins = ["mypy_django_plugin.main"]
 mypy_path = "."
+exclude = ["build/", "python/"]
+
+[[tool.mypy.overrides]]
+module = ["environ", "factory", "factory.*"]
+ignore_missing_imports = true
+follow_untyped_imports = true
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+disallow_untyped_calls = false
+disallow_any_generics = false
+disable_error_code = ["attr-defined"]
 
 [tool.django-stubs]
 django_settings_module = "carddemo.settings.development"
@@ -59,6 +71,7 @@ python_classes = ["Test*"]
 python_functions = ["test_*"]
 addopts = "--tb=short -q"
 pythonpath = ["."]
+testpaths = ["tests"]
 
 [tool.coverage.run]
 source = ["batch"]

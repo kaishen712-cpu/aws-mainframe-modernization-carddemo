@@ -13,7 +13,8 @@ import logging
 from dataclasses import dataclass, field
 from decimal import ROUND_HALF_EVEN, Decimal
 
-from django.db import connection, transaction as db_transaction
+from django.db import connection
+from django.db import transaction as db_transaction
 
 from batch.models import Account
 
