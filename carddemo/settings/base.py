@@ -134,8 +134,7 @@ LOGGING = {
             "style": "{",
         },
         "json": {
-            "format": "{levelname} {asctime} {name} {module} {message}",
-            "style": "{",
+            "()": "carddemo.logging.JSONFormatter",
         },
     },
     "handlers": {
