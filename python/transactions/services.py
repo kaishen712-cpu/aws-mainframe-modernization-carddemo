@@ -21,6 +21,7 @@ from datetime import datetime
 from decimal import Decimal, InvalidOperation
 from typing import TYPE_CHECKING
 
+from django.db import IntegrityError, transaction
 from django.db.models import QuerySet
 
 if TYPE_CHECKING:
@@ -411,30 +412,44 @@ def add_transaction(
             message=confirm_result.error_message,
         )
 
-    tran_id = generate_transaction_id()
     amt = _parse_amount(txn_input.tran_amt.strip())
 
-    try:
-        Transaction.objects.create(
-            tran_id=tran_id,
-            tran_type_cd=txn_input.tran_type_cd.strip(),
-            tran_cat_cd=txn_input.tran_cat_cd.strip(),
-            tran_source=txn_input.tran_source.strip(),
-            tran_desc=txn_input.tran_desc.strip(),
-            tran_amt=amt,
-            tran_merchant_id=txn_input.merchant_id.strip(),
-            tran_merchant_name=txn_input.merchant_name.strip(),
-            tran_merchant_city=txn_input.merchant_city.strip(),
-            tran_merchant_zip=txn_input.merchant_zip.strip(),
-            tran_card_num=txn_input.card_num.strip(),
-            tran_orig_ts=txn_input.orig_date.strip(),
-            tran_proc_ts=txn_input.proc_date.strip(),
-        )
-    except Exception:
-        return AddTransactionResult(
-            success=False,
-            message="Tran ID already exist...",
-        )
+    # Retry loop to handle race condition on transaction ID generation.
+    # Two concurrent requests may generate the same ID; the unique
+    # constraint rejects the duplicate and we retry with a fresh ID.
+    max_retries = 3
+    for attempt in range(max_retries):
+        tran_id = generate_transaction_id()
+        try:
+            with transaction.atomic():
+                Transaction.objects.create(
+                    tran_id=tran_id,
+                    tran_type_cd=txn_input.tran_type_cd.strip(),
+                    tran_cat_cd=txn_input.tran_cat_cd.strip(),
+                    tran_source=txn_input.tran_source.strip(),
+                    tran_desc=txn_input.tran_desc.strip(),
+                    tran_amt=amt,
+                    tran_merchant_id=txn_input.merchant_id.strip(),
+                    tran_merchant_name=txn_input.merchant_name.strip(),
+                    tran_merchant_city=txn_input.merchant_city.strip(),
+                    tran_merchant_zip=txn_input.merchant_zip.strip(),
+                    tran_card_num=txn_input.card_num.strip(),
+                    tran_orig_ts=txn_input.orig_date.strip(),
+                    tran_proc_ts=txn_input.proc_date.strip(),
+                )
+            break
+        except IntegrityError:
+            if attempt == max_retries - 1:
+                return AddTransactionResult(
+                    success=False,
+                    message="Tran ID already exist...",
+                )
+            continue
+        except Exception:
+            return AddTransactionResult(
+                success=False,
+                message="Tran ID already exist...",
+            )
 
     # CPS 234: Do not log transaction amounts or card numbers
     logger.info("Transaction added successfully")
@@ -580,45 +595,61 @@ def process_bill_payment(
             message="Card does not belong to this account...",
         )
 
-    # Verify account exists
-    try:
-        account = Account.objects.get(acct_id=normalised_acct)
-    except Account.DoesNotExist:
-        return BillPayResult(
-            success=False,
-            message="Account not found...",
-        )
-
     amt = Decimal(payment_amount.strip())
-    tran_id = generate_transaction_id()
     now = datetime.now().strftime("%Y-%m-%d-%H.%M.%S.%f")
 
-    try:
-        Transaction.objects.create(
-            tran_id=tran_id,
-            tran_type_cd=BILL_PAY_TYPE_CD,
-            tran_cat_cd=BILL_PAY_CAT_CD,
-            tran_source=BILL_PAY_SOURCE,
-            tran_desc=f"Bill Payment - Account {normalised_acct}",
-            tran_amt=amt,
-            tran_merchant_id="000000000",
-            tran_merchant_name="BILL PAYMENT",
-            tran_merchant_city="",
-            tran_merchant_zip="",
-            tran_card_num=normalised_card,
-            tran_orig_ts=now,
-            tran_proc_ts=now,
-        )
-    except Exception:
-        return BillPayResult(
-            success=False,
-            message="Failed to create payment transaction...",
-        )
+    # Wrap transaction creation + balance update in an atomic block
+    # with select_for_update to prevent lost-update race conditions.
+    max_retries = 3
+    for attempt in range(max_retries):
+        tran_id = generate_transaction_id()
+        try:
+            with transaction.atomic():
+                # Lock the account row to prevent concurrent balance updates
+                account = (
+                    Account.objects
+                    .select_for_update()
+                    .get(acct_id=normalised_acct)
+                )
 
-    # Update account balance
-    account.acct_curr_bal -= amt
-    account.acct_curr_cyc_credit += amt
-    account.save()
+                Transaction.objects.create(
+                    tran_id=tran_id,
+                    tran_type_cd=BILL_PAY_TYPE_CD,
+                    tran_cat_cd=BILL_PAY_CAT_CD,
+                    tran_source=BILL_PAY_SOURCE,
+                    tran_desc=f"Bill Payment - Account {normalised_acct}",
+                    tran_amt=amt,
+                    tran_merchant_id="000000000",
+                    tran_merchant_name="BILL PAYMENT",
+                    tran_merchant_city="",
+                    tran_merchant_zip="",
+                    tran_card_num=normalised_card,
+                    tran_orig_ts=now,
+                    tran_proc_ts=now,
+                )
+
+                # Update account balance atomically
+                account.acct_curr_bal -= amt
+                account.acct_curr_cyc_credit += amt
+                account.save()
+            break
+        except Account.DoesNotExist:
+            return BillPayResult(
+                success=False,
+                message="Account not found...",
+            )
+        except IntegrityError:
+            if attempt == max_retries - 1:
+                return BillPayResult(
+                    success=False,
+                    message="Failed to create payment transaction...",
+                )
+            continue
+        except Exception:
+            return BillPayResult(
+                success=False,
+                message="Failed to create payment transaction...",
+            )
 
     # CPS 234: Do not log account numbers or amounts
     logger.info("Bill payment processed successfully")

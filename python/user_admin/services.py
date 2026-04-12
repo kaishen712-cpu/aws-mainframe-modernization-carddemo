@@ -135,7 +135,7 @@ def create_user(
             message="User Type must be A or U...",
         )
 
-    if User.objects.filter(username=username).exists():
+    if User.objects.filter(username=username.strip()).exists():
         return UserOperationResult(
             success=False,
             message="User ID already exists...",
