@@ -1,0 +1,68 @@
+[project]
+name = "carddemo"
+version = "1.0.0"
+description = "CardDemo COBOL-to-Python migration — credit card management system"
+requires-python = ">=3.11"
+dependencies = [
+    "django>=5.0,<6.0",
+    "django-environ>=0.11,<1.0",
+    "psycopg[binary]>=3.1,<4.0",
+    "gunicorn>=22.0,<23.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0,<9.0",
+    "pytest-django>=4.8,<5.0",
+    "pytest-cov>=5.0,<6.0",
+    "factory-boy>=3.3,<4.0",
+    "ruff>=0.4,<1.0",
+    "mypy>=1.10,<2.0",
+    "django-stubs>=5.0,<6.0",
+]
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["carddemo*", "batch*"]
+
+[tool.ruff]
+line-length = 99
+target-version = "py311"
+exclude = ["*/migrations/*"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "S", "B", "A", "C4", "SIM", "TCH"]
+ignore = [
+    "S101",   # allow assert in tests
+    "S311",   # allow random for non-crypto use
+    "TCH003", # runtime imports should not be in TYPE_CHECKING blocks
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101", "S106"]
+
+[tool.mypy]
+strict = true
+plugins = ["mypy_django_plugin.main"]
+mypy_path = "."
+
+[tool.django-stubs]
+django_settings_module = "carddemo.settings.development"
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "carddemo.settings.testing"
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "--tb=short -q"
+pythonpath = ["."]
+
+[tool.coverage.run]
+source = ["batch"]
+omit = ["*/migrations/*", "*/tests/*"]
+
+[tool.coverage.report]
+show_missing = true
