@@ -201,8 +201,14 @@ class BatchAccountUpdater:
 
     @db_transaction.atomic
     def flush(self) -> list[str]:
-        """Write all accumulated changes atomically. Returns list of failed acct_ids."""
+        """Write all accumulated changes atomically.
+
+        Only clears deltas for successfully written accounts.
+        Failed account deltas are preserved for retry.
+        Returns list of failed acct_ids.
+        """
         failures: list[str] = []
+        succeeded: list[str] = []
         for acct_id, delta in self._deltas.items():
             record = self._repo.lookup_by_id(acct_id)
             if record is None:
@@ -212,7 +218,10 @@ class BatchAccountUpdater:
             record.acct_curr_cyc_credit += delta.cyc_credit_delta
             record.acct_curr_cyc_debit += delta.cyc_debit_delta
             self._repo.update(record)
-        self._deltas.clear()
+            succeeded.append(acct_id)
+        # Only clear successfully written deltas; failed deltas remain for retry
+        for acct_id in succeeded:
+            del self._deltas[acct_id]
         return failures
 ```
 
