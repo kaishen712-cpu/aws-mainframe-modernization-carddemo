@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Account Search — CardDemo{% endblock %}
+
+{% block content %}
+<h2>Account Management — Search</h2>
+<p>Enter an 11-digit account number to view or update account details.</p>
+
+<form method="get" action="">
+    <table>
+        <tr>
+            <td><label for="id_acct_id">Account ID:</label></td>
+            <td>{{ form.acct_id }}</td>
+            <td>
+                <button type="submit" name="action" value="view">View</button>
+            </td>
+        </tr>
+    </table>
+    {% if form.errors %}
+    <div style="color: #ff4141; margin-top: 10px;">
+        {% for field, errors in form.errors.items %}
+            {% for error in errors %}
+                <p>{{ error }}</p>
+            {% endfor %}
+        {% endfor %}
+    </div>
+    {% endif %}
+</form>
+
+{% if account %}
+<hr>
+<h3>Account Details</h3>
+<table>
+    <tr><td>Account ID:</td><td>{{ account.acct_id }}</td></tr>
+    <tr><td>Status:</td><td>{{ account.acct_active_status }}</td></tr>
+    <tr><td>Credit Limit:</td><td>{{ account.acct_credit_limit }}</td></tr>
+    <tr><td>Current Balance:</td><td>{{ account.acct_curr_bal }}</td></tr>
+</table>
+<p>
+    <a href="{% url 'accounts_mgmt:account_detail' acct_id=account.acct_id %}">Full Details</a> |
+    <a href="{% url 'accounts_mgmt:account_update' acct_id=account.acct_id %}">Update</a>
+</p>
+{% endif %}
+{% endblock %}

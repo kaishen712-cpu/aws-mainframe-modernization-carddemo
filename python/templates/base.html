@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CardDemo{% endblock %}</title>
+    <style>
+        body { font-family: 'Courier New', monospace; margin: 0; padding: 0; background: #1a1a2e; color: #00ff41; }
+        .header { background: #16213e; padding: 10px 20px; border-bottom: 2px solid #0f3460; }
+        .header h1 { margin: 0; font-size: 18px; }
+        .header h2 { margin: 0; font-size: 14px; color: #e0e0e0; }
+        .nav { background: #0f3460; padding: 5px 20px; }
+        .nav a { color: #00ff41; margin-right: 15px; text-decoration: none; }
+        .nav a:hover { text-decoration: underline; }
+        .content { padding: 20px; max-width: 960px; margin: 0 auto; }
+        .messages { list-style: none; padding: 0; }
+        .messages li { padding: 8px 12px; margin-bottom: 5px; border: 1px solid; }
+        .messages .success { border-color: #00ff41; background: #0a2a0a; }
+        .messages .error { border-color: #ff4141; background: #2a0a0a; color: #ff4141; }
+        .messages .warning { border-color: #ffff41; background: #2a2a0a; color: #ffff41; }
+        .footer { text-align: center; padding: 10px; font-size: 12px; color: #666; border-top: 1px solid #333; margin-top: 20px; }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="header">
+        <h1>AWS Mainframe Modernization</h1>
+        <h2>CardDemo</h2>
+    </div>
+    <div class="nav">
+        <a href="/">Home</a>
+        <a href="{% url 'accounts_mgmt:account_search' %}">Account Management</a>
+        {% if user.is_authenticated %}
+            <span style="float:right; color:#e0e0e0;">{{ user.username }}</span>
+        {% endif %}
+    </div>
+    <div class="content">
+        {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <li class="{{ message.tags }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% block content %}{% endblock %}
+    </div>
+    <div class="footer">
+        CardDemo &mdash; COBOL-to-Python Migration
+    </div>
+</body>
+</html>

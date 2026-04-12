@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Account Detail — CardDemo{% endblock %}
+
+{% block content %}
+<h2>Account Detail (Read-Only)</h2>
+<p style="font-size:12px; color:#888;">
+    Translated from COACTVWC.cbl — Account View program.
+</p>
+
+{% if account %}
+<h3>Account Information</h3>
+<table>
+    <tr><td>Account ID:</td><td>{{ account.acct_id }}</td></tr>
+    <tr><td>Active Status:</td><td>{{ account.acct_active_status }}</td></tr>
+    <tr><td>Credit Limit:</td><td>{{ account.acct_credit_limit }}</td></tr>
+    <tr><td>Cash Credit Limit:</td><td>{{ account.acct_cash_credit_limit }}</td></tr>
+    <tr><td>Current Balance:</td><td>{{ account.acct_curr_bal }}</td></tr>
+    <tr><td>Current Cycle Credit:</td><td>{{ account.acct_curr_cyc_credit }}</td></tr>
+    <tr><td>Current Cycle Debit:</td><td>{{ account.acct_curr_cyc_debit }}</td></tr>
+    <tr><td>Open Date:</td><td>{{ account.acct_open_date }}</td></tr>
+    <tr><td>Expiration Date:</td><td>{{ account.acct_expiration_date }}</td></tr>
+    <tr><td>Reissue Date:</td><td>{{ account.acct_reissue_date }}</td></tr>
+    <tr><td>Group ID:</td><td>{{ account.acct_group_id }}</td></tr>
+</table>
+
+{% if customer %}
+<h3>Customer Information</h3>
+<table>
+    <tr><td>Customer ID:</td><td>{{ customer.cust_id }}</td></tr>
+    <tr><td>Name:</td><td>{{ customer.cust_first_name }} {{ customer.cust_middle_name }} {{ customer.cust_last_name }}</td></tr>
+    <tr><td>Address:</td><td>{{ customer.cust_addr_line_1 }}</td></tr>
+    {% if customer.cust_addr_line_2 %}
+    <tr><td></td><td>{{ customer.cust_addr_line_2 }}</td></tr>
+    {% endif %}
+    <tr><td>City:</td><td>{{ customer.cust_addr_line_3 }}</td></tr>
+    <tr><td>State:</td><td>{{ customer.cust_addr_state_cd }}</td></tr>
+    <tr><td>ZIP:</td><td>{{ customer.cust_addr_zip }}</td></tr>
+    <tr><td>Country:</td><td>{{ customer.cust_addr_country_cd }}</td></tr>
+    <tr><td>Phone 1:</td><td>{{ customer.cust_phone_num_1 }}</td></tr>
+    <tr><td>Phone 2:</td><td>{{ customer.cust_phone_num_2 }}</td></tr>
+    <tr><td>SSN:</td><td>***-**-{{ customer.cust_ssn|slice:"5:" }}</td></tr>
+    <tr><td>Government ID:</td><td>{{ customer.cust_govt_issued_id }}</td></tr>
+    <tr><td>Date of Birth:</td><td>{{ customer.cust_dob_yyyy_mm_dd }}</td></tr>
+    <tr><td>EFT Account:</td><td>{{ customer.cust_eft_account_id }}</td></tr>
+    <tr><td>Primary Holder:</td><td>{{ customer.cust_pri_card_holder_ind }}</td></tr>
+    <tr><td>FICO Score:</td><td>{{ customer.cust_fico_credit_score }}</td></tr>
+</table>
+{% endif %}
+
+<p>
+    <a href="{% url 'accounts_mgmt:account_update' acct_id=account.acct_id %}">Update Account</a> |
+    <a href="{% url 'accounts_mgmt:account_search' %}">Back to Search</a>
+</p>
+{% endif %}
+{% endblock %}
