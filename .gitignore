@@ -6,3 +6,17 @@ batch-app/markers/*
 /.idea/
 .DS_Store
 **/.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+dist/
+build/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+*.sqlite3
+db.sqlite3

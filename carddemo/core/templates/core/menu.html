@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{# Main menu template — translated from COMEN01C.cbl BUILD-MENU-OPTIONS #}
+{# Replaces BMS map COMEN1A with HTML menu layout #}
+{# Menu options from COMEN02Y.cpy (11 options for regular users) #}
+
+{% block title %}CardDemo — {{ page_title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .menu-container {
+        max-width: 600px;
+        margin: 2rem auto;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        padding: 2rem;
+    }
+    .menu-container h2 {
+        margin-bottom: 1.5rem;
+        color: var(--primary-color);
+        border-bottom: 2px solid var(--border-color);
+        padding-bottom: 0.75rem;
+    }
+    .menu-list { list-style: none; }
+    .menu-item {
+        border-bottom: 1px solid var(--border-color);
+    }
+    .menu-item:last-child { border-bottom: none; }
+    .menu-link {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        text-decoration: none;
+        color: var(--text-color);
+        transition: background 0.15s;
+    }
+    .menu-link:hover { background: #edf2f7; }
+    .menu-number {
+        display: inline-block;
+        width: 2rem;
+        height: 2rem;
+        line-height: 2rem;
+        text-align: center;
+        background: var(--secondary-color);
+        color: white;
+        border-radius: 4px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        margin-right: 1rem;
+        flex-shrink: 0;
+    }
+    .menu-name { font-size: 0.9375rem; }
+    .menu-nav {
+        margin-top: 1.5rem;
+        display: flex;
+        gap: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="menu-container">
+    <h2>{{ page_title }}</h2>
+
+    <ul class="menu-list">
+        {# Translated from COMEN01C.cbl BUILD-MENU-OPTIONS: PERFORM VARYING WS-IDX FROM 1 BY 1 #}
+        {% for option in menu_options %}
+        <li class="menu-item">
+            <a href="{{ option.url }}" class="menu-link">
+                <span class="menu-number">{{ option.number }}</span>
+                <span class="menu-name">{{ option.name }}</span>
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <div class="menu-nav">
+        {% if user.is_admin_user %}
+        <a href="{% url 'core:admin_menu' %}" class="btn btn-secondary">Admin Menu</a>
+        {% endif %}
+        <a href="{% url 'accounts:logout' %}" class="btn btn-secondary">Sign Off (F3)</a>
+    </div>
+</div>
+{% endblock %}
