@@ -2,10 +2,13 @@
 
 Common settings shared across all environments. Environment-specific
 overrides live in development.py, production.py, and testing.py.
+
+Architecture mapping: CICS session management -> Django sessions (database-backed).
 """
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import environ
@@ -38,7 +41,10 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # CardDemo apps
     "batch",
+    "accounts",
+    "core",
 ]
 
 # ---------------------------------------------------------------------------
@@ -50,6 +56,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "accounts.middleware.PasswordResetMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -59,7 +66,7 @@ ROOT_URLCONF = "carddemo.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "core" / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -75,7 +82,7 @@ TEMPLATES = [
 WSGI_APPLICATION = "carddemo.wsgi.application"
 
 # ---------------------------------------------------------------------------
-# Database — PostgreSQL via psycopg
+# Database — PostgreSQL via psycopg (replaces VSAM KSDS files)
 # ---------------------------------------------------------------------------
 DATABASES = {
     "default": env.db(
@@ -83,6 +90,24 @@ DATABASES = {
         default="postgres://carddemo:carddemo@localhost:5432/carddemo",
     ),
 }
+
+# ---------------------------------------------------------------------------
+# Custom user model (maps COBOL USRSEC record -> Django auth)
+# ---------------------------------------------------------------------------
+
+AUTH_USER_MODEL = "accounts.CardDemoUser"
+
+# ---------------------------------------------------------------------------
+# Password hashing — Argon2 primary (CPS 234 compliant)
+# ---------------------------------------------------------------------------
+
+PASSWORD_HASHERS = [
+    "django.contrib.auth.hashers.Argon2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher",
+    "django.contrib.auth.hashers.BCryptSHA256PasswordHasher",
+    "django.contrib.auth.hashers.ScryptPasswordHasher",
+]
 
 # ---------------------------------------------------------------------------
 # Password validation
@@ -93,6 +118,20 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
+
+# ---------------------------------------------------------------------------
+# Sessions — database-backed (replaces CICS COMMAREA)
+# ---------------------------------------------------------------------------
+
+SESSION_ENGINE = "django.contrib.sessions.backends.db"
+
+# ---------------------------------------------------------------------------
+# Authentication URLs
+# ---------------------------------------------------------------------------
+
+LOGIN_URL = "/accounts/login/"
+LOGIN_REDIRECT_URL = "/menu/"
+LOGOUT_REDIRECT_URL = "/accounts/login/"
 
 # ---------------------------------------------------------------------------
 # Internationalisation
@@ -112,6 +151,18 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 # Default primary key
 # ---------------------------------------------------------------------------
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# ---------------------------------------------------------------------------
+# Login throttling settings (brute-force prevention)
+# Translated from COSGN00C.cbl — the original COBOL had no throttling;
+# this is an improvement for the Python version.
+# FLAG FOR HUMAN REVIEW: hardcoded threshold values below
+# ---------------------------------------------------------------------------
+
+LOGIN_MAX_ATTEMPTS = int(os.environ.get("LOGIN_MAX_ATTEMPTS", "5"))
+LOGIN_LOCKOUT_DURATION_SECONDS = int(
+    os.environ.get("LOGIN_LOCKOUT_DURATION_SECONDS", "300")
+)
 
 # ---------------------------------------------------------------------------
 # Logging — never log account numbers, card numbers or amounts in plain text

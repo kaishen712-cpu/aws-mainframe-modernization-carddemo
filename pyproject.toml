@@ -8,6 +8,7 @@ dependencies = [
     "django-environ>=0.11,<1.0",
     "psycopg[binary]>=3.1,<4.0",
     "gunicorn>=22.0,<23.0",
+    "argon2-cffi>=23.1,<24.0",
 ]
 
 [project.optional-dependencies]
@@ -26,7 +27,7 @@ requires = ["setuptools>=68.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-include = ["carddemo*", "batch*"]
+include = ["carddemo*", "batch*", "accounts*", "core*"]
 
 [tool.ruff]
 line-length = 99
@@ -43,6 +44,7 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = ["S101", "S106"]
+"*/migrations/*" = ["E501"]
 
 [tool.mypy]
 strict = true
@@ -61,7 +63,7 @@ addopts = "--tb=short -q"
 pythonpath = ["."]
 
 [tool.coverage.run]
-source = ["batch"]
+source = ["batch", "accounts", "core"]
 omit = ["*/migrations/*", "*/tests/*"]
 
 [tool.coverage.report]
