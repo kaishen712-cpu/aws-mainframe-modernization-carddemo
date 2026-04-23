@@ -9,6 +9,8 @@ Original: CICS COBOL program using BMS maps and VSAM files.
 This translation separates the pure business logic (validation, ID
 generation, record building) from the CICS presentation layer so
 the rules can be tested and reused independently.
+
+Refactored to use shared foundation layer (models, repositories, utils).
 """
 
 from __future__ import annotations
@@ -17,6 +19,16 @@ import re
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
+
+from python.models.records import (
+    CardXrefRecord as SharedCardXrefRecord,
+    TransactionRecord,
+)
+from python.repositories.base import (
+    CardXrefRepository,
+    TransactionRepository as SharedTransactionRepository,
+)
+from python.utils.date_validation import is_valid_calendar_date
 
 
 # ---------------------------------------------------------------------------
@@ -48,28 +60,35 @@ DATE_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 @dataclass
 class CardXrefRecord:
-    """Card cross-reference record (CVACT03Y - 50 bytes)."""
+    """Card cross-reference record (CVACT03Y - 50 bytes).
+
+    Thin wrapper providing COTRN02C-style field names while backed by
+    the shared foundation CardXrefRecord.
+    """
     card_num: str = ""      # XREF-CARD-NUM  PIC X(16)
     cust_id: str = ""       # XREF-CUST-ID   PIC 9(09)
     acct_id: str = ""       # XREF-ACCT-ID   PIC 9(11)
 
+    @classmethod
+    def from_shared(cls, shared: SharedCardXrefRecord) -> CardXrefRecord:
+        """Create from a shared foundation CardXrefRecord."""
+        return cls(
+            card_num=shared.xref_card_num,
+            cust_id=shared.xref_cust_id,
+            acct_id=shared.xref_acct_id,
+        )
 
-@dataclass
-class TransactionRecord:
-    """Transaction record layout (CVTRA05Y - 350 bytes)."""
-    tran_id: str = ""               # PIC X(16)  auto-generated ID
-    tran_type_cd: str = ""          # PIC X(02)  transaction type code
-    tran_cat_cd: str = ""           # PIC 9(04)  transaction category code
-    tran_source: str = ""           # PIC X(10)  transaction source
-    tran_desc: str = ""             # PIC X(100) transaction description
-    tran_amt: float = 0.0           # PIC S9(09)V99  signed amount
-    tran_merchant_id: str = ""      # PIC 9(09)  merchant identifier
-    tran_merchant_name: str = ""    # PIC X(50)  merchant name
-    tran_merchant_city: str = ""    # PIC X(50)  merchant city
-    tran_merchant_zip: str = ""     # PIC X(10)  merchant zip code
-    tran_card_num: str = ""         # PIC X(16)  card number
-    tran_orig_ts: str = ""          # PIC X(26)  origination timestamp
-    tran_proc_ts: str = ""          # PIC X(26)  processing timestamp
+    def to_shared(self) -> SharedCardXrefRecord:
+        """Convert to a shared foundation CardXrefRecord."""
+        return SharedCardXrefRecord(
+            xref_card_num=self.card_num,
+            xref_cust_id=self.cust_id,
+            xref_acct_id=self.acct_id,
+        )
+
+
+# TransactionRecord is imported directly from the shared foundation
+# (field names are identical, no wrapper needed)
 
 
 @dataclass
@@ -108,7 +127,7 @@ class AddTransactionResult:
 
 
 # ---------------------------------------------------------------------------
-# Repository interface (abstracts VSAM file I/O)
+# Repository interface (adapts shared foundation to COTRN02C expectations)
 # ---------------------------------------------------------------------------
 
 class TransactionRepository:
@@ -118,6 +137,10 @@ class TransactionRepository:
     In the original COBOL program these are CICS READ / WRITE / STARTBR /
     READPREV / ENDBR operations against VSAM KSDS files. Concrete
     implementations can use a database, in-memory dict, or any other store.
+
+    This interface adapts the shared foundation repository interfaces
+    (CardXrefRepository + TransactionRepository) into the combined
+    interface expected by COTRN02C's business logic.
     """
 
     def lookup_card_by_account(self, acct_id: str) -> Optional[CardXrefRecord]:
@@ -214,6 +237,48 @@ class InMemoryTransactionRepository(TransactionRepository):
             return None
         max_id = max(self.transactions.keys(), key=lambda k: int(k))
         return self.transactions[max_id]
+
+
+# ---------------------------------------------------------------------------
+# Adapter: bridge shared foundation repos into COTRN02C's interface
+# ---------------------------------------------------------------------------
+
+class FoundationTransactionRepository(TransactionRepository):
+    """Adapter that bridges the shared foundation repositories into
+    the combined interface expected by COTRN02C.
+
+    Wraps a CardXrefRepository and a (shared) TransactionRepository
+    to present the unified COTRN02C TransactionRepository API.
+    """
+
+    def __init__(
+        self,
+        xref_repo: CardXrefRepository,
+        txn_repo: SharedTransactionRepository,
+    ) -> None:
+        self._xref_repo = xref_repo
+        self._txn_repo = txn_repo
+
+    def lookup_card_by_account(self, acct_id: str) -> Optional[CardXrefRecord]:
+        shared = self._xref_repo.lookup_by_acct_id(acct_id)
+        if shared is None:
+            return None
+        return CardXrefRecord.from_shared(shared)
+
+    def lookup_account_by_card(self, card_num: str) -> Optional[CardXrefRecord]:
+        shared = self._xref_repo.lookup_by_card_num(card_num)
+        if shared is None:
+            return None
+        return CardXrefRecord.from_shared(shared)
+
+    def get_max_transaction_id(self) -> int:
+        return self._txn_repo.get_max_id()
+
+    def write_transaction(self, record: TransactionRecord) -> bool:
+        return self._txn_repo.write(record)
+
+    def get_last_transaction(self) -> Optional[TransactionRecord]:
+        return self._txn_repo.get_last_transaction()
 
 
 # ---------------------------------------------------------------------------
@@ -609,14 +674,15 @@ def _is_valid_calendar_date(date_str: str) -> bool:
     """
     Check that a YYYY-MM-DD string represents a real calendar date.
 
-    Mirrors the call to CSUTLDTC in the COBOL program. Returns True if
-    the date is valid, False otherwise.
+    Delegates to the shared foundation's is_valid_calendar_date after
+    converting from YYYY-MM-DD format to CCYYMMDD format.
     """
-    try:
-        datetime.strptime(date_str, "%Y-%m-%d")
-        return True
-    except ValueError:
+    # Convert YYYY-MM-DD to CCYYMMDD for the shared validator
+    parts = date_str.split("-")
+    if len(parts) != 3:
         return False
+    ccyymmdd = parts[0] + parts[1] + parts[2]
+    return is_valid_calendar_date(ccyymmdd)
 
 
 def _parse_amount(amount_str: str) -> float:
